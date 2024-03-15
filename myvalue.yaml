@@ -180,7 +180,7 @@ aggregator:
     # 디폴트 conf파일에 기본기능을 위한 설정이 포함됨
     # 디폴트 conf파일 미사용시, value파일의 다른 부분에서 관련기능을 찾아 disabled해줘야 에러방지됨
     
-    # :9880  # kubelet이 헬스체크(livenessProbe, readinessProbe)하려고 httpGet할 수 있도록 제공하는 포트
+    # :9880  # kubelet이 헬스체크(Probe)하려고 httpGet할 수 있도록 제공하는 포트
              # POST로 json받으면 stdout(pod로그)로 띄워주므로 테스트용도로 겸사겸사 사용가능
     # :24224 # forwarder로부터 데이터를 받기위한 포트
     # :24231 # 외부 Prometheus가 fluentd의 메트릭을 Pull Request할 수 있도록 제공하는 포트
@@ -191,6 +191,7 @@ aggregator:
       </match>
 
       @include kafka-produce.conf
+      @include kafka-consume.conf
       @include fluentd-inputs.conf
       @include fluentd-output.conf
       {{- if .Values.metrics.enabled }}
@@ -198,11 +199,50 @@ aggregator:
       {{- end }}
 
     kafka-produce.conf: |
+      # 다수 토픽 처리 테스트 필요
+      # 버퍼 최적화 필요=>pvc 켜고 파일시스템 저장으로 변경?
+      # in_http는 json만 받나? 아니면 <match **>가 json만 받나? 어차피 json 쓸거긴한데,,
       <source>
-        @type http
+        # in_http 플러그인: source섹션에서 tag지정 불가
+        # URL subpath가 source tag로 취급됨
+        # e.g) <fluentd_ip>:8888/kafka.produce
+        @type http   
         bind 0.0.0.0
         port 8888
       </source>
+
+      <match kafka.produce>
+        @type kafka2  # Produce (Push records to brokers)
+
+        # 콤마로 failure시 사용할 broker 주소 여러 개 기술 가능
+        brokers test-kafka.default.svc.cluster.local:9092
+        default_topic fluentd-test
+
+        # json만 받는다
+        <format>
+          @type json
+        </format>
+        
+        <buffer fluentd-test>
+          @type memory
+          flush_interval 3s
+        </buffer>
+      </match>
+
+    kafka-consume.conf: |
+      # earlist, latest 테스트 필요
+      # PVC 없고, 껐다 켰을 때, 기존 consumer-offset 인식하는지
+      # 다수 토픽 처리 테스트 필요
+      <source>
+        @type kafka   # Consume(Pull records from brokers)
+        brokers test-kafka.default.svc.cluster.local:9092
+        topics fluentd-test
+        format json
+        # tag는 토픽명을 따름
+      </source>
+      <match kafka.fluentd-test>
+        @type stdout
+      </match>
 
     fluentd-inputs.conf: |
       # TCP input to receive logs from
@@ -525,7 +565,7 @@ aggregator:
   ## @param aggregator.startupProbe.successThreshold Success threshold for startupProbe
   ##
   startupProbe:
-    enabled: true
+    enabled: false
     httpGet:
       path: /fluentd.healthcheck?json=%7B%22ping%22%3A+%22pong%22%7D
       port: http
@@ -567,7 +607,7 @@ aggregator:
   ## @param aggregator.readinessProbe.successThreshold Success threshold for readinessProbe
   ##
   readinessProbe:
-    enabled: true
+    enabled: false
     httpGet:
       path: /fluentd.healthcheck?json=%7B%22ping%22%3A+%22pong%22%7D
       port: http
