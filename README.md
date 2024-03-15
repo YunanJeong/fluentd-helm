@@ -25,3 +25,7 @@ helm install test https://github.com/YunanJeong/simple-kafka-deploy/releases/dow
 ```
 
 ## MEMO
+
+- 커뮤니티에선 fluentd를 aggregator와 forwarder로 구분하는 데, fluentd 공식은 아니다.
+- 공식 fluentd(td-agent)처럼 단일앱으로만 실행하려면, aggregator만 활성화
+- forwarder는 DaemomSet으로 구현되어있으므로 비활성화
