@@ -199,9 +199,6 @@ aggregator:
       {{- end }}
 
     kafka-produce.conf: |
-      # 다수 토픽 처리 테스트 필요
-      # 버퍼 최적화 필요=>pvc 켜고 파일시스템 저장으로 변경?
-      # in_http는 json만 받나? 아니면 <match **>가 json만 받나? 어차피 json 쓸거긴한데,,
       <source>
         # in_http 플러그인: source섹션에서 tag지정 불가
         # URL subpath가 source tag로 취급됨
@@ -212,20 +209,28 @@ aggregator:
       </source>
 
       <match kafka.produce>
-        @type kafka2  # Produce (Push records to brokers)
-
-        # 콤마로 failure시 사용할 broker 주소 여러 개 기술 가능
-        brokers test-kafka.default.svc.cluster.local:9092
-        default_topic fluentd-test
+        @type kafka2  # Produce plugin   
+        brokers test-kafka.default.svc.cluster.local:9092  # 콤마로 여러 주소 지정 가능(failure시 사용됨)
+        default_topic fluentd-test                         # 멀티토픽 불가, tag routing으로 개별처리 필요
 
         # json만 받는다
         <format>
           @type json
         </format>
         
+        # file 버퍼: 안정성, 확장성 중시 => 누락 원천차단, 근데 느림 (라이브시, pv 활성화 필요)
+        # memory 버퍼: 속도 중시 => 애초에 버퍼를 많이 안쓰고 빠르게 처리되는게 바람직, 근데 누락위험
         <buffer fluentd-test>
           @type memory
-          flush_interval 3s
+          flush_mode interval
+          flush_interval 2s
+          flush_thread_count 4
+
+          chunk_limit_size 2MB #as small as possible
+          total_limit_size 4GB
+        
+          retry_max_interval 30 
+          retry_forever true
         </buffer>
       </match>
 
@@ -234,7 +239,7 @@ aggregator:
       # PVC 없고, 껐다 켰을 때, 기존 consumer-offset 인식하는지
       # 다수 토픽 처리 테스트 필요
       <source>
-        @type kafka   # Consume(Pull records from brokers)
+        @type kafka   # Consume plugin
         brokers test-kafka.default.svc.cluster.local:9092
         topics fluentd-test
         format json
