@@ -191,7 +191,8 @@ aggregator:
       </match>
 
       @include kafka-produce.conf
-      @include kafka-consume.conf
+      # @include kafka-consume.conf
+      @include kafka-consume-group.conf
       @include fluentd-inputs.conf
       @include fluentd-output.conf
       {{- if .Values.metrics.enabled }}
@@ -236,15 +237,47 @@ aggregator:
       </match>
 
     kafka-consume.conf: |
-      # earlist, latest 테스트 필요
-      # PVC 없고, 껐다 켰을 때, 기존 consumer-offset 인식하는지
-      # 다수 토픽 처리 테스트 필요
       <source>
-        @type kafka   # Consume plugin
-        brokers test-kafka.default.svc.cluster.local:9092
-        topics fluentd-test
-        format json
+        @type kafka  # Consume plugin
+        
+        # consumer-group을 생성하지 않는 단일 consumer
+        # 단일 partition만 접근가능. default 0번    
+        # broker에 __consumer_offset이 기록되지 않음, 중복 및 누락 위험성
+        # 실행시 대상 partition에서 읽기 시작할 offset을 수동지정가능, default -1(현재 최신 Record부터 가져옴)
+        
         # tag는 토픽명을 따름
+        brokers test-kafka.default.svc.cluster.local:9092
+        format json
+        topics fluentd-test  # 콤마 구분 멀티토픽지원, regex 불가
+        
+        # topic 별 처리하기
+        # <topic>
+        #   topic     <listening topic>
+        #   partition <listening partition: default=0>
+        #   offset    <listening start offset: default=-1>
+        # </topic>
+        # <topic>
+        #   topic     <listening topic>
+        #   partition <listening partition: default=0>
+        #   offset    <listening start offset: default=-1>
+        # </topic>
+
+      </source>
+      <match kafka.fluentd-test>
+        @type stdout
+      </match>
+
+    kafka-consume-group.conf: |
+      <source>
+        @type kafka_group
+        brokers test-kafka.default.svc.cluster.local:9092
+        consumer_group fltd-consumer-group
+        topics /fluentd-.*/       # 멀티토픽 콤마 구분 지원, regex 가능!!
+        format json
+
+        # false면 최신부터 읽음. 첫 실행시에만 중요.
+        # 재기동할 땐 consumer-group의 offset을 따르기 때문에 이 설정값과 상관없이 안읽은부분부터 읽음
+        start_from_beginning true # default true
       </source>
       <match kafka.fluentd-test>
         @type stdout
