@@ -236,9 +236,25 @@ aggregator:
         </buffer>
       </match>
 
+    kafka-consume-group.conf: |
+      <source>
+        @type kafka_group  # Consume plugin
+        brokers test-kafka.default.svc.cluster.local:9092
+        consumer_group fltd-consumer-group
+        topics /fluentd-.*/       # 멀티토픽 콤마 구분 지원, regex 가능!!
+        format json
+
+        # false면 최신부터 읽음. 첫 실행시에만 중요.
+        # 재기동할 땐 consumer-group의 offset을 따르기 때문에 이 설정값과 상관없이 안읽은부분부터 읽음
+        start_from_beginning true # default true
+      </source>
+      <match kafka.fluentd-test>
+        @type stdout
+      </match>
+
     kafka-consume.conf: |
       <source>
-        @type kafka  # Consume plugin
+        @type kafka  # Consume plugin(Non-consumer-group)  # 비권장
         
         # consumer-group을 생성하지 않는 단일 consumer
         # 단일 partition만 접근가능. default 0번    
@@ -262,22 +278,6 @@ aggregator:
         #   offset    <listening start offset: default=-1>
         # </topic>
 
-      </source>
-      <match kafka.fluentd-test>
-        @type stdout
-      </match>
-
-    kafka-consume-group.conf: |
-      <source>
-        @type kafka_group
-        brokers test-kafka.default.svc.cluster.local:9092
-        consumer_group fltd-consumer-group
-        topics /fluentd-.*/       # 멀티토픽 콤마 구분 지원, regex 가능!!
-        format json
-
-        # false면 최신부터 읽음. 첫 실행시에만 중요.
-        # 재기동할 땐 consumer-group의 offset을 따르기 때문에 이 설정값과 상관없이 안읽은부분부터 읽음
-        start_from_beginning true # default true
       </source>
       <match kafka.fluentd-test>
         @type stdout
