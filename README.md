@@ -24,6 +24,13 @@ helm install test https://github.com/YunanJeong/simple-kafka-deploy/releases/dow
 -f https://github.com/YunanJeong/simple-kafka-deploy/releases/download/v2.0.3/kraft-multi.yaml
 ```
 
+## 플러그인파일들을 호스트마운트 경로로 옮기기
+
+```sh
+# /etc/plugins 생성
+sudo cp -r plugins/ /etc/
+```
+
 ## MEMO
 
 - 커뮤니티에선 fluentd를 aggregator와 forwarder로 구분하는 데, fluentd 공식은 아니다.

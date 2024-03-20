@@ -166,8 +166,8 @@ aggregator:
   ## @param aggregator.extraGems List of extra gems to be installed. Can be used to install additional fluentd plugins.
   ##
   extraGems: # []
-    - name: fluent-plugin-kafka
-      version: 0.19.2
+    # - name: fluent-plugin-beats 
+    #   version: 2.1.2
   ## @param aggregator.configFile Name of the config file that will be used by Fluentd at launch under the `/opt/bitnami/fluentd/conf` directory
   ##
   configFile: fluentd.conf
@@ -843,15 +843,7 @@ aggregator:
   ##     command: ["/bin/sh","-c","nginx -s quit; while killall -0 nginx; do sleep 1; done"]
   ##
   lifecycleHooks: {}
-  ## @param aggregator.initContainers Add init containers to aggregator pods
-  ## Example
-  ##
-  ## initContainers:
-  ##   - name: do-something
-  ##     image: busybox
-  ##     command: ['do', 'something']
-  ##
-  initContainers: []
+
   ## @param aggregator.sidecars Add sidecars to aggregator pods
   ##
   ## For example:
@@ -864,17 +856,67 @@ aggregator:
   ##         containerPort: 1234
   ##
   sidecars: []
-  ## @param aggregator.extraVolumes Extra volumes
-  ## Example Use Case: mount an emptyDir into /tmp to support running with readOnlyRootFileSystem
-  ##   - name: tmpDir
-  ##       emptyDir: {}
-  ##
-  extraVolumes: []
-  ## @param aggregator.extraVolumeMounts Mount extra volume(s)
-  ##   - name: tmpDir
-  ##     mountPath: /tmp
-  ##
-  extraVolumeMounts: []
+
+  ## @param aggregator.initContainers Add init containers to aggregator pods
+  initContainers: # []
+    - name: install-offline-plugins
+      image: '{{ include "fluentd.aggregator.image" . }}'  # 동일 이미지 tpl
+      imagePullPolicy: IfNotPresent
+      # 명령어 Permission Denied 방지
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsUser: 0
+      command: [sh, -c]
+      args:
+        - |-
+          # install gems in Init Container
+          fluent-gem install /plugins/*.gem
+
+          # copy installed gems to shared dir
+          cp -r /opt/bitnami/fluentd/extensions/* /extensions/
+          cp -r /opt/bitnami/fluentd/gems/* /gems/
+          cp -r /opt/bitnami/fluentd/specifications/* /specifications
+
+      # init Container에 Volume 추가(마운트)
+      volumeMounts:
+        # 로컬 설치파일을 init container에 등록
+        - name: local-gems
+          mountPath: /plugins         # init container 내부 경로
+        # App Container, Init Container 간 공유 볼륨
+        - name: shared-dir  
+          mountPath: /extentions      # init container 내부 경로
+          subPath: extentions         # 볼륨 내 서브경로 매칭
+        - name: shared-dir     
+          mountPath: /gems            # init container 내부 경로
+          subPath: gems               # 볼륨 내 서브경로 매칭
+        - name: shared-dir
+          mountPath: /specifications  # init container 내부 경로
+          subPath: specifications     # 볼륨 내 서브경로 매칭
+
+  # 새 볼륨을 정의할 때 사용
+  extraVolumes: # []
+    # 로컬호스트(Node)와 Init Container 간 공유 볼륨
+    - name: local-gems
+      hostPath:     
+        type: Directory
+        path: /etc/plugins  # 로컬호스트 경로
+    # App Container, Init Container 간 공유 볼륨
+    - name: shared-dir
+      emptyDir: {}  
+      
+  # 정의된 볼륨을 컨테이너 내부 경로에 마운트할 때 사용
+  extraVolumeMounts: # []
+    - name: shared-dir
+      mountPath: /opt/bitnami/fluentd/extensions/      # App. Container 내부 경로
+      subPath: extensions
+    - name: shared-dir
+      mountPath: /opt/bitnami/fluentd/gems/            # App. Container 내부 경로
+      subPath: gems
+    - name: shared-dir
+      mountPath: /opt/bitnami/fluentd/specifications/  # App. Container 내부 경로
+      subPath: specifications
+
+   
   ## @param aggregator.extraVolumeClaimTemplates Optionally specify extra list of additional volume claim templates for the Fluentd Aggregator pods in StatefulSet
   ##
   extraVolumeClaimTemplates: []
