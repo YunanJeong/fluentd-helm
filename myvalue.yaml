@@ -112,7 +112,7 @@ aggregator:
     tag: ""
   ## @param aggregator.replicaCount Number of aggregator pods to deploy in the Stateful Set
   ##
-  replicaCount: 1
+  replicaCount: 2
   ## K8s Security Context for Aggregator pods
   ## https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   ## @param aggregator.podSecurityContext.enabled Enable security context for aggregator pods
