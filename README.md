@@ -16,7 +16,7 @@ fluentd와 kafka를 연결하는 예제
 ```sh
 # fluentd
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install my-fluentd bitnami/fluentd --version 5.19.0
+helm install fltd bitnami/fluentd --version 5.19.0
 
 # kafka
 # broker 3, connect 1, private ip, KRAFT
