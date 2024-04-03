@@ -1,4 +1,4 @@
-# fluentd-kafka
+# fluentd-helm
 
 fluentd와 kafka를 연결하는 예제
 
@@ -14,15 +14,35 @@ fluentd와 kafka를 연결하는 예제
 ## fluentd
 
 ```sh
+# fluentd 기본
 # fluentd
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm install fltd bitnami/fluentd --version 5.19.0
+```
 
-# kafka
+### Example: Kafka Produce/Consume 
+
+```sh
+# fluentd
+helm install fltd bitnami/fluentd --version 5.19.0 -f kafka.yaml
+
+# kafka 샘플 설치
 # broker 3, connect 1, private ip, KRAFT
 helm install test https://github.com/YunanJeong/simple-kafka-deploy/releases/download/v2.0.3/skafka-2.0.3.tgz \
 -f https://github.com/YunanJeong/simple-kafka-deploy/releases/download/v2.0.3/kraft-multi.yaml
 ```
+
+### Example: fluentd to Loki
+
+```sh
+# fluentd
+helm install fltd bitnami/fluentd --version 5.19.0 -f loki.yaml
+
+# loki 샘플 설치
+
+
+```
+
 
 ## 플러그인 gem 설치
 
