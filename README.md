@@ -20,16 +20,16 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm install fltd bitnami/fluentd --version 5.19.0
 ```
 
-### Example: Kafka Produce/Consume 
+### Example: Kafka Produce/Consume
 
 ```sh
 # fluentd
 helm install fltd bitnami/fluentd --version 5.19.0 -f kafka.yaml
 
 # kafka 샘플 설치
-# broker 3, connect 1, private ip, KRAFT
 helm install test https://github.com/YunanJeong/simple-kafka-deploy/releases/download/v2.0.3/skafka-2.0.3.tgz \
--f https://github.com/YunanJeong/simple-kafka-deploy/releases/download/v2.0.3/kraft-multi.yaml
+-f https://github.com/YunanJeong/simple-kafka-deploy/releases/download/v2.0.3/kraft-multi.yaml \
+--set "connect.enabled=false"
 ```
 
 ### Example: fluentd to Loki
@@ -39,10 +39,8 @@ helm install test https://github.com/YunanJeong/simple-kafka-deploy/releases/dow
 helm install fltd bitnami/fluentd --version 5.19.0 -f loki.yaml
 
 # loki 샘플 설치
-
-
+helm install lok-gra grafana/loki-stack --version 2.9.12 -f https://raw.githubusercontent.com/YunanJeong/plg-stack/main/loki-grafana.yaml
 ```
-
 
 ## 플러그인 gem 설치
 
