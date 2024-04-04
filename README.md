@@ -27,7 +27,7 @@ helm install fltd bitnami/fluentd --version 5.19.0
 helm install fltd bitnami/fluentd --version 5.19.0 -f kafka.yaml
 
 # kafka 샘플 설치
-helm install test https://github.com/YunanJeong/simple-kafka-deploy/releases/download/v2.0.3/skafka-2.0.3.tgz \
+helm install kfk https://github.com/YunanJeong/simple-kafka-deploy/releases/download/v2.0.3/skafka-2.0.3.tgz \
 -f https://github.com/YunanJeong/simple-kafka-deploy/releases/download/v2.0.3/kraft-multi.yaml \
 --set "connect.enabled=false"
 ```
