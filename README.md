@@ -24,7 +24,7 @@ helm install fltd bitnami/fluentd --version 5.19.0
 
 ```sh
 # fluentd
-helm install fltd bitnami/fluentd --version 5.19.0 -f kafka.yaml
+helm install fltd bitnami/fluentd --version 5.19.0 -f to_kafka.yaml
 
 # kafka 샘플 설치
 helm install kfk https://github.com/YunanJeong/simple-kafka-deploy/releases/download/v2.0.3/skafka-2.0.3.tgz \
@@ -36,7 +36,7 @@ helm install kfk https://github.com/YunanJeong/simple-kafka-deploy/releases/down
 
 ```sh
 # fluentd
-helm install fltd bitnami/fluentd --version 5.19.0 -f loki.yaml
+helm install fltd bitnami/fluentd --version 5.19.0 -f to_loki.yaml
 
 # loki 샘플 설치
 helm install lok-gra grafana/loki-stack --version 2.9.12 -f https://raw.githubusercontent.com/YunanJeong/plg-stack/main/loki-grafana.yaml
