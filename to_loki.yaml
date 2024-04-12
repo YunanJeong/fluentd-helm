@@ -198,17 +198,31 @@ aggregator:
       <match lokitest>
         @type loki
         url "http://lok-gra-loki:3100"
+        
         # username "#{ENV['LOKI_USERNAME']}"
         # password "#{ENV['LOKI_PASSWORD']}"
+        
         # Loki 내부 로그분류용 Label
         # app, job 등은 많이 쓰이는 key인데, 오픈소스 대시보드에서 로그조회시 필수
-        # 필요에 따라 label 추가 가능
+                # 필요에 따라 label 추가 가능
         extra_labels {"app":"myapp","job":"myjob","agent":"fluentd","env":"dev"}
+                
         <buffer>
-          flush_interval 10s
+          #@type file
+          #path /var/log/td-agent/buffer/myapp.*.buffer
+          @type memory
+          flush_mode interval
           flush_at_shutdown true
+          flush_interval 2s
+          flush_thread_count 4
+          queued_chunks_limit_size 4  # equals to flush_thread_count
+
+          chunk_limit_size 2MB  # as small as possible
+          total_limit_size 3GB
+
+          retry_max_interval 30
+          retry_timeout 72h # default
         </buffer>
-        # buffer_chunk_limit 1m
       </match>
 
     fluentd-inputs.conf: |
