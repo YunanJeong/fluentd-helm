@@ -78,7 +78,12 @@ aggregator:
 
 ## MEMO
 
-- 커뮤니티에선 fluentd를 aggregator와 forwarder로 구분하는 데, fluentd 공식은 아니다.
-- 공식 fluentd(td-agent)처럼 단일앱으로만 실행하려면, aggregator만 활성화
-- forwarder는 DaemomSet으로 구현되어있으므로 비활성화
+- fluentd를 aggregator와 forwarder로 구분한다.
+  - 원래 커뮤니티에서만 구분했던 것 같은데, 요새는 공식문서에서도 구분하더라.
+  - fluentd로 forwarder역할까지 다 해결하려는 추세가 강해진 듯
+  - aggregator: 중앙수집해서 처리 후 다음 파이프라인으로 넘김
+  - forwarder: fluentbit, beats와 같은 역할. Helm에선 DaemomSet으로 구현됨.
+- td-agent(fluentd 공식배포)처럼 단일앱으로만 실행하려면,
+  - aggregator만 활성화
+  - forwarder는 비활성화
 - kafka, prometheus, elasticsearch 등 주요 플랫폼은 이미 gem 플러그인이 내장되어 있어, 추가 설치가 필요없음
