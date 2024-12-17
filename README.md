@@ -1,10 +1,15 @@
 # fluentd-helm
 
-fluentd와 kafka를 연결하는 예제
+- 쿠버네티스 기반 fluentd 배포 방법 & 설정
+- fluentd로 이기종 플랫폼 간 연결
+- 이를 위한 사전테스트, 템플릿을 다루는 저장소
 
-- Kafka 사용시 매번 Producer, Consumer를 직접 코딩하여 만드는 것은 비효율적이다.
-- 강력한 파이프라인 도구 중 하나인 fluentd로 Producer, Consumer를 대체할 수 있는 유스케이스가 많다.
-- 이를 위한 사전테스트, 템플릿을 다루는 레포지토리
+## fluentd는 상당히 유용한 파이프라인(로그 수집&처리) 도구
+
+- Elasticsearch, Kafka, S3, DB, HDFS, Prometheus, Loki 등 많은 플랫폼과 호환
+- 가벼운 것에 비해 꽤나 괜찮은 성능
+- 단 1개의 설정 파일로 제어
+- 각종 데이터 플랫폼이 지원하는 전용 연결 방법이 있겠으나, 이를 매번 새로 익히는 데는 시간이 소요된다. 이럴 때 `두 플랫폼을 빠르게 연결하고 무난하게 운영`할 수 있도록 도와주는 도구
 
 ## Requirement
 
@@ -21,6 +26,9 @@ helm install fltd bitnami/fluentd --version 5.19.0
 ```
 
 ### Example: Kafka Produce/Consume
+
+- Kafka 사용시 매번 Producer, Consumer를 직접 코딩하여 만드는 것은 비효율적이다.
+- fluentd로 Producer, Consumer를 대체할 수 있는 유스케이스가 많다.
 
 ```sh
 # fluentd
