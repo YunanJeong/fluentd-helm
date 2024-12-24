@@ -77,8 +77,13 @@ sudo cp -r plugins/ /etc/
   3. 설치된 파일내역은 initContainer와 App. Container 간 공유경로(볼륨)으로 복사됨
 
 ```yaml
-# 사용되는 value 섹션들
+# 주로 사용되는 value 섹션들
 aggregator:
+  
+  # 파일 버퍼용 PV. /opt/bitnami/fluentd/logs/buffers 경로 고정.
+  persistence: {}
+
+  # To install offline plugins
   initContainers: []
   extraVolumes: []
   extraVolumeMounts: []
