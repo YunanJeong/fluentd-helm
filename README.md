@@ -80,7 +80,7 @@ sudo cp -r plugins/ /etc/
 # 주로 사용되는 value 섹션들
 aggregator:
   
-  # 파일 버퍼용 PV. /opt/bitnami/fluentd/logs/buffers 경로 고정.
+  # 파일 버퍼용 PV. /opt/bitnami/fluentd/logs/buffers => mountPath(컨테이너 내부 경로)고정
   persistence: {}
 
   # To install offline plugins
