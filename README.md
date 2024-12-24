@@ -77,13 +77,8 @@ sudo cp -r plugins/ /etc/
   3. 설치된 파일내역은 initContainer와 App. Container 간 공유경로(볼륨)으로 복사됨
 
 ```yaml
-# 주로 사용되는 value 섹션들
+# 주로 사용되는 value 섹션들  # To install offline plugins
 aggregator:
-  
-  # 파일 버퍼용 PV. /opt/bitnami/fluentd/logs/buffers => mountPath(컨테이너 내부 경로)고정
-  persistence: {}
-
-  # To install offline plugins
   initContainers: []
   extraVolumes: []
   extraVolumeMounts: []
@@ -100,3 +95,14 @@ aggregator:
   - aggregator만 활성화
   - forwarder는 비활성화
 - kafka, prometheus, elasticsearch 등 주요 플랫폼은 이미 gem 플러그인이 내장되어 있어, 추가 설치가 필요없음
+
+## Production Ready 추가 고려사항
+
+```yaml
+# 파일 버퍼용 PV 활성화
+# mountPath(컨테이너 내부 경로)고정 => /opt/bitnami/fluentd/logs/buffers
+aggregator:
+  persistence: 
+    enabled: true
+```
+  
