@@ -10,7 +10,7 @@ aggregator:
 
   ## @param aggregator.extraGems List of extra gems to be installed. Can be used to install additional fluentd plugins.
   ##
-  extraGems: # []
+  extraGems: []
     # - name: fluent-plugin-beats 
     #   version: 2.1.2
   ## @param aggregator.configFile Name of the config file that will be used by Fluentd at launch under the `/opt/bitnami/fluentd/conf` directory
