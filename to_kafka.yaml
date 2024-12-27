@@ -89,7 +89,8 @@ aggregator:
         topics /fluentd-.*/       # 멀티토픽 콤마 구분 지원, regex 가능!! # topic명이 tag로 사용됨
         format json
 
-        # record의 key를 fluentd 이벤트의 지정한 필드값("record_key")으로 저장. 
+        # kafka record의 key도 활용하기
+        # record key 텍스트를 fluentd 이벤트의 지정한 필드값("record_key")으로 저장. 
         kafka_message_key record_key   # Optional. format옵션과 함께 사용. 
 
         # false면 최신부터 읽음. 첫 실행시에만 중요.
