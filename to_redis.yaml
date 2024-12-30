@@ -1,0 +1,236 @@
+forwarder:
+  enabled: false
+  
+## Aggregator parameters
+##
+aggregator:
+  enabled: true
+  replicaCount: 1
+
+  extraGems: []
+  ## @param aggregator.configFile Name of the config file that will be used by Fluentd at launch under the `/opt/bitnami/fluentd/conf` directory
+  ##
+  configFile: fluentd.conf
+  ## @param aggregator.configMap Name of the config map that contains the Fluentd configuration files
+  ##
+  configMap: ""
+  ## @param aggregator.configMapFiles [object] Files to be added to be config map. Ignored if `aggregator.configMap` is set
+  ##
+  configMapFiles:
+    fluentd.conf: |
+      # Ignore fluentd own events
+      <match fluent.**>
+        @type null
+      </match>
+
+      @include send-to-redis.conf
+      @include fluentd-inputs.conf
+      @include fluentd-output.conf
+      {{- if .Values.metrics.enabled }}
+      @include metrics.conf
+      {{- end }}
+
+    send-to-redis.conf: |
+      <source>
+        @type http
+        port 9880
+      </source>
+      <match redis-test>
+        @type redis
+        host redis-host
+        port 6379
+        db_number 0
+        password redis-password
+        key fluentd-logs
+        format json
+
+        <buffer>
+          @type memory
+          flush_mode interval
+          flush_at_shutdown true
+          flush_interval 2s
+          flush_thread_count 4
+          queued_chunks_limit_size 4  # equals to flush_thread_count
+
+          chunk_limit_size 2MB  # as small as possible
+          total_limit_size 3GB
+
+          retry_max_interval 30
+          retry_timeout 72h # default
+        </buffer>
+      </match>
+
+    fluentd-inputs.conf: |
+      # TCP input to receive logs from
+      {{- if .Values.aggregator.port }}
+      <source>
+        @type forward
+        bind 0.0.0.0
+        port {{ .Values.aggregator.port }}
+        {{- if .Values.tls.enabled }}
+        <transport tls>
+          ca_path /opt/bitnami/fluentd/certs/in_forward/ca.crt
+          cert_path /opt/bitnami/fluentd/certs/in_forward/tls.crt
+          private_key_path /opt/bitnami/fluentd/certs/in_forward/tls.key
+          client_cert_auth true
+        </transport>
+        {{- end }}
+      </source>
+      {{- end }}
+
+      # HTTP input for the liveness and readiness probes
+      <source>
+        @type http
+        bind 0.0.0.0
+        port 9880
+      </source>
+    fluentd-output.conf: |
+      # Throw the healthcheck to the standard output
+      <match fluentd.healthcheck>
+        @type stdout
+      </match>
+
+      # Send the logs to the standard output
+      <match **>
+        @type stdout
+      </match>
+    metrics.conf: |
+      # Prometheus Exporter Plugin
+      # input plugin that exports metrics
+      <source>
+        @type prometheus
+        port {{ .Values.metrics.service.port }}
+      </source>
+
+      # input plugin that collects metrics from MonitorAgent
+      <source>
+        @type prometheus_monitor
+        <labels>
+          host ${hostname}
+        </labels>
+      </source>
+
+      # input plugin that collects metrics for output plugin
+      <source>
+        @type prometheus_output_monitor
+        <labels>
+          host ${hostname}
+        </labels>
+      </source>
+  ## @param aggregator.port Port the Aggregator container will listen for logs. Leave it blank to ignore.
+  ## You can specify other ports in the aggregator.containerPorts parameter
+  ##
+  port: 24224
+  ## @param aggregator.extraArgs Extra arguments for the Fluentd command line
+  ## ref: https://docs.fluentd.org/deployment/command-line-option
+  ##
+  extraArgs: ""
+  ## @param aggregator.extraEnvVars Extra environment variables to pass to the container
+  ## extraEnvVars:
+  ##   - name: MY_ENV_VAR
+  ##     value: my_value
+  ##
+  extraEnvVars: []
+  ## @param aggregator.extraEnvVarsCM Name of existing ConfigMap containing extra env vars for Fluentd Aggregator nodes
+  ##
+  extraEnvVarsCM: ""
+  ## @param aggregator.extraEnvVarsSecret Name of existing Secret containing extra env vars for Fluentd Aggregator nodes
+  ##
+  extraEnvVarsSecret: ""
+  ## @param aggregator.containerPorts [array] Ports the aggregator containers will listen on
+  ##
+  containerPorts:
+    # - name: my-port
+    #   containerPort: 24222
+    #   protocol: TCP
+    - name: http
+      containerPort: 9880
+      protocol: TCP
+  ## Service parameters
+  ##
+  service:
+    ## @param aggregator.service.type Kubernetes service type (`ClusterIP`, `NodePort`, or `LoadBalancer`) for the aggregators
+    ##
+    type: LoadBalancer
+    ## @param aggregator.service.ports [object] Array containing the aggregator service ports
+    ##
+    ports:
+      http:
+        port: 9880
+        targetPort: http
+        protocol: TCP
+      tcp:
+        port: 24224
+        targetPort: tcp
+        protocol: TCP
+
+
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    clusterIP: ""
+    annotations: {}
+    externalTrafficPolicy: Cluster
+
+  networkPolicy:
+    enabled: true
+
+  ingress:
+    enabled: false
+
+  startupProbe:
+    enabled: false
+
+  livenessProbe:
+    enabled: true
+    httpGet:
+      path: /fluentd.healthcheck?json=%7B%22ping%22%3A+%22pong%22%7D
+      port: http
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+    
+  readinessProbe:
+    enabled: false
+    
+  updateStrategy:
+    type: RollingUpdate
+    
+  resources: {}
+
+  nodeSelector: {}
+
+  autoscaling:
+    enabled: false
+    
+  persistence:
+    enabled: false
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+    selector: {}
+    annotations: {}
+
+  ## @param aggregator.command Override default container command (useful when using custom images)
+  ##
+  command: []
+  args: []
+  lifecycleHooks: {}
+  initContainers: []
+  sidecars: []
+  extraVolumes: []
+  extraVolumeMounts: []
+  extraVolumeClaimTemplates: []
+  initScripts: {}
+  initScriptsCM: ""
+  initScriptsSecret: ""
+
+## Prometheus Exporter / Metrics
+##
+metrics:
+  enabled: false
+
+tls:
+  enabled: false
