@@ -11,6 +11,14 @@
 - 단 1개의 설정 파일로 제어
 - 각종 데이터 플랫폼이 지원하는 전용 연결 방법이 있겠으나, 이를 매번 새로 익히는 데는 시간이 소요된다. 이럴 때 `두 플랫폼을 빠르게 연결하고 무난하게 운영`할 수 있도록 도와주는 도구
 
+## fluentd 기본동작
+
+- 입력(INPUT)을 받아서, 처리(Filter)한 후, 출력(OUTPUT)으로 내보내는 도구
+- Data Source → `Input → Filter/Buffer → Output` → Data Destination
+- INPUT: fluentd의 기본철학은 다른 플랫폼이 Push해주는 데이터를 받는 것이지만, fluentd가 Pull 방식으로 데이터를 가져오는 경우도 많다.
+  - e.g. Kafka, DB 등 Pull 방식이 자연스러운 플랫폼들과 연결시 fluentd input plugin이 지원되는 경우가 많음
+  - e.g. 일반적으로 타 플랫폼과 연결시 fluentd에서 output만 지원하는 plugin이 훨씬 더 많음
+
 ## Requirement
 
 - K3s
