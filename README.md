@@ -58,6 +58,14 @@ helm install fltd bitnami/fluentd --version 6.5.13 -f to_loki.yaml
 helm install lok-gra grafana/loki-stack --version 2.9.12 -f https://raw.githubusercontent.com/YunanJeong/plg-stack/main/loki-grafana.yaml
 ```
 
+### Example: fluentd to redis
+
+```sh
+# fluentd
+helm install fltd bitnami/fluentd --version 6.5.13 -f to_redis.yaml
+helm upgrade fltd bitnami/fluentd --version 6.5.13 -f to_redis.yaml
+```
+
 ## 플러그인 gem 설치
 
 - **kafka, prometheus, elasticsearch 등 주요 플랫폼은 이미 gem 플러그인이 내장되어 있어, 추가 설치가 필요없음**
