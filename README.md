@@ -57,7 +57,8 @@ helm install fltd bitnami/fluentd --version 6.5.13
 ```sh
 # http request시, URL의 subpath(e.g. test)가 fluentd source tag로 사용됨
 # format 설정에 맞는 메시지만 처리됨. default는 json
-# http 메시지 전송시 OS에 따라 json 표기법이 달라질 수 있음. Postman 사용시에도 마찬가지
+# http 메시지 전송시 OS에 따라 json 표기법을 다르게 써야할 수 있음
+# Postman의 경우, Content-Type, Content-Length 헤더 필요
 
 # Ubuntu
 curl -X POST -H "Content-Type: application/json" -d '{"key":"value"}' http://wsl:9880/test
