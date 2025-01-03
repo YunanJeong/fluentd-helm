@@ -22,8 +22,8 @@ aggregator:
   ## @param aggregator.configMapFiles [object] Files to be added to be config map. Ignored if `aggregator.configMap` is set
   ##
   configMapFiles:
-    # 디폴트 conf파일에 기본기능을 위한 설정이 포함됨
-    # 디폴트 conf파일 미사용시, value파일의 다른 부분에서 관련기능을 찾아 disabled해줘야 에러방지됨
+    # 디폴트 conf파일에 테스트 및 모니터링 등 기본기능을 위한 설정이 포함됨
+    # 디폴트 conf내용 삭제시, value파일에서 관련기능 프로퍼티를 찾아 disabled해줘야 에러방지됨
     
     # :9880  # kubelet이 헬스체크(Probe)하려고 httpGet할 수 있도록 제공하는 포트
              # POST로 json받으면 stdout(pod로그)로 띄워주므로 테스트용도로 겸사겸사 사용가능
@@ -52,7 +52,7 @@ aggregator:
         @type http   
         bind 0.0.0.0
         port 8888
-        # format none  # plaintext 처리 원할시 설정
+        # format none  # plaintext로 처리시 설정
       </source>
 
       <match kafka.produce>

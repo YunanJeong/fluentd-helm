@@ -33,6 +33,35 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm install fltd bitnami/fluentd --version 6.5.13
 ```
 
+### Example: in-http
+
+- 헬름차트에 in-http 플러그인이 포함되어있으며 9880포트로 열려있음
+- 각종 output 플러그인을 테스트하기 위해 샘플 데이터를 입력하기 좋음
+- http 메시지 전송시, URL의 subpath가 fluentd source tag로 사용됨
+- format 설정에 맞는 메시지만 처리됨. default는 json
+
+```conf
+<source>
+  @type http
+  bind 0.0.0.0
+  port 8888
+  format none  # plaintext로 처리시 설정  # default: json
+</source>
+<match test>
+  @type stdout
+</match>
+```
+
+```sh
+# http 메시지 전송시 OS에 따라 json 표기법이 달라질 수 있음. Postman 사용시에도 마찬가지
+
+# Ubuntu
+curl -X POST -H "Content-Type: application/json" -d '{"key":"value"}' http://wsl:9880/test
+
+# Windows
+curl -X POST -H "Content-Type: application/json" -d "{\"key\":\"value\"}" http://wsl:9880/test
+```
+
 ### Example: Kafka Produce/Consume
 
 - Kafka 사용시 매번 Producer, Consumer를 직접 코딩하여 만드는 것은 비효율적이다.
