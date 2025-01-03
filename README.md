@@ -35,12 +35,14 @@ helm install fltd bitnami/fluentd --version 6.5.13
 
 ### Example: in-http
 
-- 헬름차트에 in-http 플러그인이 포함되어있으며 9880포트로 열려있음
-- 각종 output 플러그인을 테스트하기 위해 샘플 데이터를 입력하기 좋음
-- http 메시지 전송시, URL의 subpath가 fluentd source tag로 사용됨
-- format 설정에 맞는 메시지만 처리됨. default는 json
+- http 메시지를 수신하는 input 플러그인
+- 각종 output 플러그인 테스트 시 샘플 데이터를 입력하기에 적합
+- bitnami/fluentd 헬름차트에서
+  - in-http 플러그인이 내장되어있으며 9880포트로 http개방됨
+  - 이는 내부 Probe용도로 사용되나, 테스트 용도로도 활용 가능
 
 ```conf
+# 다음과 같이 간단하게 직접 설정도 가능
 <source>
   @type http
   bind 0.0.0.0
@@ -53,6 +55,8 @@ helm install fltd bitnami/fluentd --version 6.5.13
 ```
 
 ```sh
+# http request시, URL의 subpath(e.g. test)가 fluentd source tag로 사용됨
+# format 설정에 맞는 메시지만 처리됨. default는 json
 # http 메시지 전송시 OS에 따라 json 표기법이 달라질 수 있음. Postman 사용시에도 마찬가지
 
 # Ubuntu
