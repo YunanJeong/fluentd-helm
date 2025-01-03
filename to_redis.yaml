@@ -40,10 +40,10 @@ aggregator:
       </source>
       <match redis-test>
         @type redis
-        host redis-host
+        host my-redis-headless.default.svc.cluster.local
         port 6379
         db_number 0
-        password redis-password
+        # password redis-password
         key fluentd-logs
         format json
 
