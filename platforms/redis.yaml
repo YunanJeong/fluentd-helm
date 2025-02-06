@@ -1,0 +1,33 @@
+auth:
+  enabled: false
+
+master:
+  persistence:
+    enabled: false
+  service:
+    type: LoadBalancer
+replica:
+  replicaCount: 0
+  persistence:
+    enabled: false
+  # service:
+  #   type: LoadBalancer
+
+# sentinel:
+#   enabled: true
+  # service:
+  #   type: LoadBalancer
+  # masterService:
+  #   enabled: true
+  #   type: LoadBalancer
+  #   ports:
+  #     redis: 6379
+
+##
+# rbac:
+#   ## @param rbac.create Specifies whether RBAC resources should be created
+#   ##
+#   create: true
+
+metrics:
+  enabled: true
