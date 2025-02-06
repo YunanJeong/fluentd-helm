@@ -70,7 +70,7 @@ loki:
       retention_period: 168h        # default: 744h(31일), 최소 24h
       
   persistence:
-    enabled: true
+    enabled: false
     size: 100Gi                     # 동적 프로비저닝시 지정
     # storageClassName:             # 동적 프로비저닝시 지정
     # existingClaim: loki-pv-claim  # 사전 설정된 pvc 있는 경우 이름을 지정 (정적 프로비저닝)
@@ -104,7 +104,7 @@ grafana:
   
   persistence:
     type: statefulset  # helm uninstall 해도 남아있게 하려면 statefulset
-    enabled: true
+    enabled: false
 
   ## Configure grafana dashboard providers
   ## ref: http://docs.grafana.org/administration/provisioning/#dashboards
