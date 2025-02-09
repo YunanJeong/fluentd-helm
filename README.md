@@ -75,11 +75,6 @@ curl -X POST -H "Content-Type: application/json" -d "{\"key\":\"value\"}" http:/
 ```sh
 # fluentd
 helm install fltd bitnami/fluentd --version 6.5.13 -f to_kafka.yaml
-
-# kafka 샘플 설치
-helm install test https://github.com/YunanJeong/simple-kafka-deploy/releases/download/v2.0.3/skafka-2.0.3.tgz \
--f https://github.com/YunanJeong/simple-kafka-deploy/releases/download/v2.0.3/kraft-multi.yaml \
---set "connect.enabled=false"
 ```
 
 ### Example: fluentd to Loki
@@ -87,9 +82,6 @@ helm install test https://github.com/YunanJeong/simple-kafka-deploy/releases/dow
 ```sh
 # fluentd
 helm install fltd bitnami/fluentd --version 6.5.13 -f to_loki.yaml
-
-# loki 샘플 설치
-helm install lok-gra grafana/loki-stack --version 2.9.12 -f https://github.com/YunanJeong/plg-stack/releases/download/plg-sample/loki-grafana.yaml
 ```
 
 ### Example: fluentd to redis
@@ -98,9 +90,6 @@ helm install lok-gra grafana/loki-stack --version 2.9.12 -f https://github.com/Y
 # fluentd
 helm install fltd bitnami/fluentd --version 6.5.13 -f to_redis.yaml
 helm upgrade fltd bitnami/fluentd --version 6.5.13 -f to_redis.yaml
-
-# redis 샘플 설치
-helm install my-redis bitnami/redis --version 20.6.1 -f https://github.com/YunanJeong/redis-test/releases/download/redis-sample/custom.yaml
 ```
 
 ## 플러그인 gem 설치
