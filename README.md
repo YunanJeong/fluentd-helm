@@ -67,27 +67,18 @@ curl -X POST -H "Content-Type: application/json" -d '{"key":"value"}' http://wsl
 curl -X POST -H "Content-Type: application/json" -d "{\"key\":\"value\"}" http://wsl:9880/test
 ```
 
-### Example: Kafka Produce/Consume
-
-- Kafka 사용시 매번 Producer, Consumer를 직접 코딩하여 만드는 것은 비효율적이다.
-- fluentd로 Producer, Consumer를 대체할 수 있는 유스케이스가 많다.
+### Examples
 
 ```sh
-# fluentd
+# - Kafka 사용시 매번 Producer, Consumer를 직접 코딩하여 만드는 것은 비효율적이다.
+# - fluentd로 Producer, Consumer를 대체할 수 있는 유스케이스가 많다.
+# fluentd: Kafka Produce/Consume
 helm install fltd bitnami/fluentd --version 6.5.13 -f to_kafka.yaml
-```
 
-### Example: fluentd to Loki
-
-```sh
-# fluentd
+# fluentd to Loki
 helm install fltd bitnami/fluentd --version 6.5.13 -f to_loki.yaml
-```
 
-### Example: fluentd to redis
-
-```sh
-# fluentd
+# fluentd to redis
 helm install fltd bitnami/fluentd --version 6.5.13 -f to_redis.yaml
 helm upgrade fltd bitnami/fluentd --version 6.5.13 -f to_redis.yaml
 ```
