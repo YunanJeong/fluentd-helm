@@ -57,7 +57,7 @@ aggregator:
 
       <match kafka.produce>
         @type kafka2  # Produce plugin   
-        brokers test-kafka.default.svc.cluster.local:9092  # 콤마로 여러 주소 지정 가능(failure시 사용됨)
+        brokers my-kfk-kafka.default.svc.cluster.local:9092  # 콤마로 여러 주소 지정 가능(failure시 사용됨)
         default_topic fluentd-test                         # 멀티토픽 불가, tag routing으로 개별처리 필요
 
         # json만 받는다
@@ -84,7 +84,7 @@ aggregator:
     kafka-consume-group.conf: |
       <source>
         @type kafka_group  # Consume plugin
-        brokers test-kafka.default.svc.cluster.local:9092
+        brokers my-kfk-kafka.default.svc.cluster.local:9092
         consumer_group fltd-consumer-group
         topics /fluentd-.*/       # 멀티토픽 콤마 구분 지원, regex 가능!! # topic명이 tag로 사용됨
         format json
@@ -111,7 +111,7 @@ aggregator:
         # 실행시 대상 partition에서 읽기 시작할 offset을 수동지정가능, default -1(현재 최신 Record부터 가져옴)
         
         # tag는 토픽명을 따름
-        brokers test-kafka.default.svc.cluster.local:9092
+        brokers my-kfk-kafka.default.svc.cluster.local:9092
         format json
         topics fluentd-test  # 콤마 구분 멀티토픽지원, regex 불가
         
