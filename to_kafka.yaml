@@ -70,17 +70,13 @@ aggregator:
         
         # file 버퍼: 안정성, 확장성 중시 => 누락 원천차단, 근데 느림 (라이브시, pv 활성화 필요)
         # memory 버퍼: 속도 중시 => 애초에 버퍼를 많이 안쓰고 빠르게 처리되는게 바람직, 근데 누락위험
-        <buffer kafka.produce.buffer>
-          @type memory
-          flush_mode interval
-          flush_interval 2s
-          flush_thread_count 4
-
-          chunk_limit_size 2MB #as small as possible
-          total_limit_size 4GB
-        
-          retry_max_interval 30 
-          retry_forever true
+        <buffer>
+          @type file
+          path /opt/bitnami/fluentd/logs/buffers/kafka.produce.buffer   # /opt/bitnami/fluentd/logs/buffers까지는 차트에서 강제하는 PV경로
+          flush_interval 1s
+          flush_thread_count 5
+          chunk_limit_size 512kb 
+          retry_max_interval 30s
         </buffer>
       </match>
 
@@ -90,7 +86,7 @@ aggregator:
         brokers my-kfk-kafka.default.svc.cluster.local:9092
         consumer_group fltd-consumer-group
         topics /fluentd-.*/       # 멀티토픽 콤마 구분 지원, regex 가능!! # topic명이 tag로 사용됨
-        format json
+        format json               # text|json|ltsv|msgpack   # default: json
 
         # kafka record의 key도 활용하기
         # record key 텍스트를 fluentd 이벤트의 지정한 필드값("record_key")으로 저장. 
@@ -102,6 +98,19 @@ aggregator:
       </source>
       <match kafka.fluentd-test>
         @type stdout
+
+        # consumer-group 사용시 kafka측에서 offset 관리하므로 file buffer 없어도됨
+        <buffer>
+          @type memory
+          flush_mode interval
+          flush_interval 2s
+          flush_thread_count 4
+          chunk_limit_size 2MB #as small as possible
+          total_limit_size 4GB
+          retry_max_interval 30 
+          retry_forever true
+        </buffer>
+
       </match>
 
     kafka-consume.conf: |
@@ -116,7 +125,7 @@ aggregator:
         
         # tag는 토픽명을 따름
         brokers my-kfk-kafka.default.svc.cluster.local:9092
-        format json
+        format json          # text|json|ltsv|msgpack   # default: json
         topics fluentd-test  # 콤마 구분 멀티토픽지원, regex 불가
         
         # topic 별 처리하기
@@ -134,6 +143,17 @@ aggregator:
       </source>
       <match kafka.fluentd-test>
         @type stdout
+
+        # Kafka 측에서 offset관리가 되지 않으므로 file buffer 필수
+        <buffer>
+          @type file
+          path /opt/bitnami/fluentd/logs/buffers/kafka.consume.buffer   # /opt/bitnami/fluentd/logs/buffers까지는 차트에서 강제하는 PV경로
+          flush_interval 1s
+          flush_thread_count 5
+          chunk_limit_size 512kb 
+          retry_max_interval 30s
+        </buffer>
+
       </match>
 
     fluentd-inputs.conf: |
