@@ -51,25 +51,26 @@ aggregator:
         @type http   
         bind 0.0.0.0
         port 8888
-        format none  # plaintext로 처리시 설정
+
+        <parse>
+          @type none       # 파싱/구조화를 미루고, 라인전체를 단일 key에 담는다. 
+          message_key data # default: message
+        </parse>
 
       </source>
+
+      # fluentd애서 원본데이터의 변경없이 PlainText(bytes)를 그대로 Kafka에 전송
+      # => input 에서 parser plugin 'none'과,  output에서 formatter plugin 'single_value'의 조합으로 처리
       
-      # <filter **>
-      #   @type record_transformer
-      #   remove_keys message
-      # </filter>
-
-
       <match kafka.produce>
         @type kafka2  # Produce plugin   
         brokers my-kfk-kafka.default.svc.cluster.local:9092  # 콤마로 여러 주소 지정 가능(failure시 사용됨)
-        default_topic fluentd-test                         # 멀티토픽 불가, tag routing으로 개별처리 필요
-
+        default_topic fluentd-test                           # 멀티토픽 불가, tag routing으로 개별처리 필요
+        
         <format>
-          @type single_value
+          @type single_value   # 단일 key에서만 데이터를 추출. 주로 parse plugin 'none'으로 전달받은 데이터를 처리할 때 사용 
           add_newline false    # default: true
-          message_key message  # default: message
+          message_key data     # default: message
         </format>
         
         # file 버퍼: 안정성, 확장성 중시 => 누락 원천차단, 근데 느림 (라이브시, pv 활성화 필요)
