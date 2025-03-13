@@ -44,6 +44,10 @@ aggregator:
       {{- end }}
 
     kafka-produce-plaintext.conf: |
+      # 
+      # fluentd애서 원본데이터 변경없이 PlainText(bytes)를 Kafka에 전송하는 예시
+      # => input 에서 parser plugin 'none'과,  output에서 formatter plugin 'single_value'의 조합으로 처리
+
       <source>
         # in_http 플러그인: source섹션에서 tag지정 불가
         # URL subpath가 source tag로 취급됨
@@ -59,10 +63,6 @@ aggregator:
 
       </source>
 
-
-      # fluentd애서 원본데이터의 변경없이 PlainText(bytes)를 그대로 Kafka에 전송
-      # => input 에서 parser plugin 'none'과,  output에서 formatter plugin 'single_value'의 조합으로 처리
-      
       <match kafka.produce>
         @type kafka2  # Produce plugin   
         brokers my-kfk-kafka.default.svc.cluster.local:9092  # 콤마로 여러 주소 지정 가능(failure시 사용됨)
