@@ -106,7 +106,7 @@ aggregator:
 sudo cp -r plugins/ /etc/
 ```
 
-- 이후 다음 과정으로 배포된다. 샘플파일 `sample_install_offline_plugins.yaml` 참고
+- 이후 다음 과정으로 배포된다. 샘플파일 `install_offline_plugins.yaml` 참고
   1. 로컬 gem경로가 initContainer에 마운트
   2. initContainer에서 gem이 설치됨
   3. 설치된 파일내역은 initContainer와 App. Container 간 공유경로(볼륨)으로 복사됨
