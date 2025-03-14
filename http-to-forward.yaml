@@ -63,11 +63,19 @@ aggregator:
         # forward엔 formatter 사용 불가
         # key-value 형태로 전달해야 함.  plaintext를 처리하더라도 단일 필드에 담아서 전달해야 함
 
+        # 여러 서버로 분할 라우팅 가능하며 weight으로 비율조절 가능
         <server>
           name wsl
           host wsl
           port 24224
+          weight 60
         </server>
+        # <server>
+        #   name wsl2
+        #   host wsl2
+        #   port 24225
+        #   weight 40
+        # </server>
       </match>
 
 
