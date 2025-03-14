@@ -28,7 +28,7 @@ aggregator:
     # :9880  # kubelet이 헬스체크(Probe)하려고 httpGet할 수 있도록 제공하는 포트
              # POST로 json받으면 stdout(pod로그)로 띄워주므로 테스트용도로 겸사겸사 사용가능
              # fluentd pod 관리에 사용되므로, 실제 메시지는 별도 http port를 활용하자
-    # :24224 # fluentbit or fluentd로부터 데이터를 받기위한 포트. tag가 유지됨. # TLS 적용
+    # :24224 # fluentbit or fluentd로부터 데이터를 받기위한 포트. tag가 유지됨.
     # :24231 # 외부 Prometheus가 fluentd의 메트릭을 Pull Request할 수 있도록 제공하는 포트
     fluentd.conf: |
       # Ignore fluentd own events
