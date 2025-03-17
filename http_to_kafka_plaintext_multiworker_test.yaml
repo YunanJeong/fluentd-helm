@@ -71,13 +71,14 @@ aggregator:
       </worker>
      
       # INPUT PLUGIN 종류에 따라 멀티코어사용 불가하거나 오작동할 수 있음.
-      # 이는 DOCUMENT에서 반드시 확인 및 테스트 진행할 것
+      # 이는 DOCUMENT에서 반드시 확인 및 테스트 진행할 것  
       # https://docs.fluentd.org/input
+
       # - (중요)in_tail: 파일처리시 문제있으므로 <worker 0>와 같이 단일코어 할당을 명시해줘야 함. 멀티코어 쓰면 안됨.
       # - in_forward: 단일포트로 멀티코어 사용가능. worker 자동분배 후 다음 스텝으로 넘어감.
       # - in_http: 단일포트로 멀티코어 사용가능.  worker 자동분배 후 다음 스텝으로 넘어감.
       # - monitor_agent: 설정값 포트번호에 1씩 더하여 worker마다 개별포트가 자동할당됨 
-
+      # - 공식문서에 명시되지않은 경우 등 애매할 땐 INPUT PLUGIN은 단일코어할당을 명시하는 것이 가장 안전!
 
       # FILTER, OUTPUT 플러그인들은 무난하게 멀티코어 적용됨
       # (중요) 단, 파일처리가 들어가는 부분은 덮어 쓰이지 않도록 식별자(worker_id)를 붙여줘야 한다.
