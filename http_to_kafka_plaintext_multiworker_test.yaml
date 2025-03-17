@@ -36,20 +36,25 @@ aggregator:
         @type null
       </match>
 
-      @include kafka-produce-plaintext-multi.conf
-
-      @include fluentd-inputs.conf
-      @include fluentd-output.conf
-      {{- if .Values.metrics.enabled }}
-      @include metrics.conf
-      {{- end }}
-
-    kafka-produce-plaintext-multi.conf: |
-
+      #######################################################
       # 멀티코어(worker)사용 선언
+      #######################################################
       <system>
         workers 3
       </system>
+      
+      @include kafka-produce-plaintext-multi.conf
+     
+      @include fluentd-inputs.conf
+      @include fluentd-output.conf
+
+      {{- if .Values.metrics.enabled }}
+      <worker 0>
+        @include metrics.conf
+      </worker>
+      {{- end }}
+
+    kafka-produce-plaintext-multi.conf: |
 
       # <worker> 지시자로 코어 별 로직 할당 가능
       # (중요)<worker> 지시자를 명시하지 않으면 <system>설정에 따라 전체 코어를 멀티사용
