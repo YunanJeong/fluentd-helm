@@ -69,17 +69,18 @@ aggregator:
           @type json
         </format>
         
-        # file 버퍼: 안정성, 확장성 중시 => 누락 원천차단, 근데 느림 (라이브시, pv 활성화 필요)
-        # memory 버퍼: 속도 중시 => 애초에 버퍼를 많이 안쓰고 빠르게 처리되는게 바람직, 근데 누락위험
+        # file 버퍼: 안정성, 확장성 중시 => 누락 원천차단, 근데 느림 (라이브시, pv 활성화 필요) (멀티코어시, 버퍼파일 식별자 표기 필요)
+        # memory 버퍼: 속도 중시 => 빠름, 누락위험
         <buffer>
           @type file
-          path /opt/bitnami/fluentd/logs/buffers/kafka.produce.buffer   # /opt/bitnami/fluentd/logs/buffers까지는 차트에서 강제하는 PV경로
+          path "/opt/bitnami/fluentd/logs/buffers/kafka.produce.buffer#{worker_id}"   # /opt/bitnami/fluentd/logs/buffers까지는 차트에서 강제하는 PV경로
           flush_interval 1s
           flush_thread_count 5
           chunk_limit_size 512kb 
           retry_max_interval 30s
         </buffer>
       </match>
+
 
     kafka-consume-group.conf: |
       <source>
@@ -148,7 +149,7 @@ aggregator:
         # Kafka 측에서 offset관리가 되지 않으므로 file buffer 필수
         <buffer>
           @type file
-          path /opt/bitnami/fluentd/logs/buffers/kafka.consume.buffer   # /opt/bitnami/fluentd/logs/buffers까지는 차트에서 강제하는 PV경로
+          path "/opt/bitnami/fluentd/logs/buffers/kafka.consume.buffer#{worker_id}"   # /opt/bitnami/fluentd/logs/buffers까지는 차트에서 강제하는 PV경로
           flush_interval 1s
           flush_thread_count 5
           chunk_limit_size 512kb 

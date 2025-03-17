@@ -75,11 +75,11 @@ aggregator:
           message_key data     # default: message
         </format>
         
-        # file 버퍼: 안정성, 확장성 중시 => 누락 원천차단, 근데 느림 (라이브시, pv 활성화 필요)
+        # file 버퍼: 안정성, 확장성 중시 => 누락 원천차단, 근데 느림 (라이브시, pv 활성화 필요) (멀티코어시, 버퍼파일 식별자 표기 필요)
         # memory 버퍼: 속도 중시 => 빠름, 누락위험
         <buffer>
           @type file
-          path /opt/bitnami/fluentd/logs/buffers/kafka.produce.buffer   # /opt/bitnami/fluentd/logs/buffers까지는 차트에서 강제하는 PV경로
+          path "/opt/bitnami/fluentd/logs/buffers/kafka.produce.buffer#{worker_id}"   # /opt/bitnami/fluentd/logs/buffers까지는 차트에서 강제하는 PV경로
           flush_interval 1s
           flush_thread_count 5
           chunk_limit_size 512kb 
