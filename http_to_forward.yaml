@@ -63,7 +63,13 @@ aggregator:
         # forward엔 formatter 사용 불가
         # key-value 형태로 전달해야 함.  plaintext를 처리하더라도 단일 필드에 담아서 전달해야 함
 
-        # out_forward에 TLS 설정을 하고싶으면 aggregator말고 forwarder 쪽 설정을 참고
+        # out_forward에서 디테일한 TLS 설정은 aggregator말고 forwarder 쪽 설정을 참고
+        # transport tls                    # tls 활성화
+        # tls_insecure_mode true           # 인증서 검증 건너뛰기(테스트용, TLS의 암호화기능은 활성화되지만, 논리적 중간자 공격을 피할 수없음. TLS 최소요건 불만족)
+        # tls_allow_self_signed_cert true  # 서버(in_forward) 측에서 자체서명 인증서 사용시 허용할지 여부. 자체서명 서버 인증서와 동일한 파일이 클라이언트(out_forward)에도 있어야 함 
+        # tls_cert_path                    # (개발자가) 서버의 자체서명 인증서를 복사해서 클라이언트에 갖다놓은 filepath  # 클라이언트 증명용 인증서가 아니다
+        # tls_verify_hostname false        # 
+        
 
         # 여러 서버로 분할 라우팅 가능하며 weight으로 비율조절 가능
         <server>
