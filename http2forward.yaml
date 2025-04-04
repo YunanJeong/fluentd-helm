@@ -50,7 +50,7 @@ aggregator:
         bind 0.0.0.0
         port 9999
         <parse>
-          # 데이터 라인 전체를 plaintext로 취급하여 단일 key에 담는다.
+          # 데이터 라인 전체를 파싱없이 단일 key에 담는다.
           @type none       
           message_key data # default: message
         </parse>
