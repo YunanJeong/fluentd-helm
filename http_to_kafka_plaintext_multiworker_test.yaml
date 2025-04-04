@@ -103,7 +103,8 @@ aggregator:
           path "/opt/bitnami/fluentd/logs/buffers/kafka.produce.buffer#{worker_id}"   # /opt/bitnami/fluentd/logs/buffers까지는 차트에서 강제하는 PV경로
           flush_interval 1s
           flush_thread_count 5
-          chunk_limit_size 512kb 
+          chunk_limit_size 512kb
+          total_limit_size 64GB   # Default: 512MB (memory) / 64GB (file)
           retry_max_interval 30s
         </buffer>
       </match>

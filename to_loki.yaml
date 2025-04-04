@@ -58,7 +58,7 @@ aggregator:
           queued_chunks_limit_size 4  # equals to flush_thread_count
 
           chunk_limit_size 2MB  # as small as possible
-          total_limit_size 3GB
+          total_limit_size 3GB  # Default: 512MB (memory) / 64GB (file)
 
           retry_max_interval 30
           retry_timeout 72h # default
