@@ -202,7 +202,7 @@ aggregator:
     - name: livebeat
       containerPort: 5044
       protocol: TCP
-    - name: livebeat
+    - name: alphabeat
       containerPort: 5045
       protocol: TCP
     - name: http
