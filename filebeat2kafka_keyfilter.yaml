@@ -220,11 +220,11 @@ aggregator:
     ## @param aggregator.service.ports [object] Array containing the aggregator service ports
     ##
     ports:
-      beat:
+      livebeat:
         port: 5044
         targetPort: livebeat
         protocol: TCP
-      beat:
+      alphabeat:
         port: 5045
         targetPort: alphabeat
         protocol: TCP
