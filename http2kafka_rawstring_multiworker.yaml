@@ -43,7 +43,7 @@ aggregator:
         workers 3
       </system>
       
-      @include kafka-produce-plaintext-multi.conf
+      @include kafka-produce-rawstring-multi.conf
      
       @include fluentd-inputs.conf
       @include fluentd-output.conf
@@ -54,7 +54,7 @@ aggregator:
       </worker>
       {{- end }}
 
-    kafka-produce-plaintext-multi.conf: |
+    kafka-produce-rawstring-multi.conf: |
 
       # <worker> 지시자로 코어 별 로직 할당 가능
       # (중요)<worker> 지시자를 명시하지 않으면 <system>설정에 따라 전체 코어를 멀티사용

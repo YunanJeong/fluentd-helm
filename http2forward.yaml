@@ -61,7 +61,7 @@ aggregator:
         
         # forward로 다른 fluentd에 전송시, tag가 유지됨
         # forward엔 formatter 사용 불가
-        # key-value 형태로 전달해야 함.  plaintext를 처리하더라도 단일 필드에 담아서 전달해야 함
+        # key-value 형태로 전달해야 함.  rawstring을 처리하더라도 단일 필드에 담아서 전달해야 함
 
         # out_forward에서 디테일한 TLS 설정은 aggregator말고 forwarder 쪽 설정을 참고
         # transport tls                    # tls 활성화
