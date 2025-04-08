@@ -129,8 +129,8 @@ aggregator:
           @type file
 
           # 멀티코어 사용시 파일버퍼명에 식별자 붙이기
-          # /opt/bitnami/fluentd/logs/buffers까지는 차트에서 강제하는 PV경로  # "#{worker_id}"안붙여도 내부에서 자동 경로 구분하는듯?
-          path "/opt/bitnami/fluentd/logs/buffers/to_kafka"   
+          # /opt/bitnami/fluentd/logs/buffers까지는 차트에서 강제하는 PV경로  # worker_id 안붙여도 내부에서 자동 경로 구분하긴하는데, 버전/환경마다 달라서 붙이는게 좋음
+          path "/opt/bitnami/fluentd/logs/buffers/to_kafka/work_#{worker_id}"   
           flush_interval 1s
           flush_thread_count 5
           chunk_limit_size 512kb  # as small as possible
