@@ -141,9 +141,10 @@ aggregator:
       </match>
 
       # Send the logs to the standard output
-      <match **>
-        @type stdout
-      </match>
+      # 중요: worker 사용시 <match **> 패턴 사용시 의도치 않게 태그라우팅 될 수 있음 
+      # <match **>
+      #   @type stdout
+      # </match>
     metrics.conf: |
       # Prometheus Exporter Plugin
       # input plugin that exports metrics
