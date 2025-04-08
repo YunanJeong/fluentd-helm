@@ -47,7 +47,7 @@ helm install fltd bitnami/fluentd --version 6.5.13
   @type http
   bind 0.0.0.0
   port 8888
-  format none  # plaintext로 처리시 설정  # default: json
+  format none  # rawstring으로 처리시 설정  # default: json
 </source>
 <match test>
   @type stdout
