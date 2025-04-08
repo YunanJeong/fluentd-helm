@@ -32,9 +32,11 @@ aggregator:
     # :24231 # 외부 Prometheus가 fluentd의 메트릭을 Pull Request할 수 있도록 제공하는 포트
     fluentd.conf: |
       # Ignore fluentd own events
-      <match fluent.**>
-        @type null
-      </match>
+      <label @FLUENT_LOG>
+        <match fluent.**>
+          @type null
+        </match>
+      </label>
 
       #######################################################
       # 멀티코어(worker)사용 선언
@@ -42,18 +44,21 @@ aggregator:
       <system>
         workers 3
       </system>
-      
-      @include test-input-http-bytes.conf
-      @include filebeat-to-kafka.conf
-     
-      @include fluentd-inputs.conf
-      @include fluentd-output.conf
 
       {{- if .Values.metrics.enabled }}
       <worker 0>
         @include metrics.conf
       </worker>
       {{- end }}
+
+
+      @include fluentd-inputs.conf
+
+      @include test-input-http-bytes.conf
+      @include filebeat-to-kafka.conf
+
+      @include fluentd-output.conf
+
 
     test-input-http-bytes.conf: |
       <source>
@@ -93,22 +98,39 @@ aggregator:
       # # message: 원본로그 내용
       <filter *.beat>
         @type record_modifier
-        whitelist_keys fields,log,message
+
+        # 태그 기반 토픽 라우팅을 위한 필드 추가
+        <record>
+          topickey "fltd.${tag_parts[0]}"   # fltd.live, fltd.alpha
+        </record>
+
+        # 화이트리스트 지정 필드만 남기기  # message가 비즈니스데이터 # fields, log는 트러블 슈팅을 용도
+        whitelist_keys topickey,fields,log,message
       </filter>
       
       <match *.beat>
         @type kafka2  # Produce plugin   
         brokers my-kfk-kafka.default.svc.cluster.local:9092  
-        topic fltd.${tag_parts[0]}    # 전송할 토픽명  # fltd.alpha, fltd.live
-        # topic_key keyname              # 데이터 내 특정 키값으로 토픽명 지정
-        # default_topic fluentd-test     # topic_key가 없을 경우 기본 토픽명
+        topic_key topickey          # 데이터 내 특정 키값으로 토픽명 지정 # 멀티토픽 전송 방법
 
-        <buffer>
+        # default_topic my-topic     # topic_key 필드가 없을 경우 기본 토픽명 # 미지정시 태그명 # 멀티토픽 불가
+        # topic my-topic             # 전송할 토픽명  # 멀티토픽 불가
+
+        # ruby hash의 최종출력을 json으로 포맷팅  # json 불만족시 누락되지만, filebeat 랩핑 메시지라 json만족 # message값의 json유효성은 Kafka Streams에서 검사  
+        <format>
+          @type json
+        </format>
+
+        # 일반적인 buffer 옆에는 chunk key 자리인데, 동일한 key끼리 하나의 버퍼 청크(파일)로 묶는다.  다른 key 끼리 하나의 청크가 되지 않도록 한다.
+        # tag로 지정 or 메시지 내 특정 필드 등 선택가능  # 미지정시 모든 유형 메시지가 단일 청크에 뒤섞일 수 있음
+        # Kafka buffer 한정으로, topic_key와 동일한 필드 설정시, value가 없으면 default_topic을 사용하는 로직이 있음.
+        # chunk key는 필수는 아닌데 알파, 라이브 환경정도는 나누는 게 좋을 듯 싶다.
+        <buffer topickey>
           @type file
 
-          # 멀티코어 사용시 파일버퍼에도 worker_id 등 식별자를 붙여주도록 한다.
-          # /opt/bitnami/fluentd/logs/buffers까지는 차트에서 강제하는 PV경로
-          path "/opt/bitnami/fluentd/logs/buffers/kafka.produce.buffer#{worker_id}"   
+          # 멀티코어 사용시 파일버퍼명에 식별자 붙이기
+          # /opt/bitnami/fluentd/logs/buffers까지는 차트에서 강제하는 PV경로  # "#{worker_id}"안붙여도 내부에서 자동 경로 구분하는듯?
+          path "/opt/bitnami/fluentd/logs/buffers/to_kafka"   
           flush_interval 1s
           flush_thread_count 5
           chunk_limit_size 512kb  # as small as possible
