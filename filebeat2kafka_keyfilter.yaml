@@ -111,10 +111,10 @@ aggregator:
       <match *.beat>
         @type kafka2  # Produce plugin   
         brokers my-kfk-kafka.default.svc.cluster.local:9092  
+        
         topic_key topickey          # 데이터 내 특정 키값으로 토픽명 지정 # 멀티토픽 전송 방법
-
-        # default_topic my-topic     # topic_key 필드가 없을 경우 기본 토픽명 # 미지정시 태그명 # 멀티토픽 불가
-        # topic my-topic             # 전송할 토픽명  # 멀티토픽 불가
+        # default_topic my-topic    # topic_key 필드가 없을 경우 기본 토픽명 # 미지정시 태그명 # 멀티토픽 불가
+        # topic my-topic            # 전송할 토픽명  # 멀티토픽 불가
 
         # ruby hash의 최종출력을 json으로 포맷팅  # json 불만족시 누락되지만, filebeat 랩핑 메시지라 json만족 # message값의 json유효성은 Kafka Streams에서 검사  
         <format>
