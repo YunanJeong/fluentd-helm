@@ -80,6 +80,8 @@ aggregator:
 
     in-filebeat.conf: |
       # beats 플러그인은 워커 1개만 사용하는게 좋음. 멀티워커사용시 개별 port번호 1씩 증가하며 자동추가되므로 관리 및 사용 힘듦
+      # 이렇게 여러 포트로 들어오는 메시지를 하나의 포맷으로 통합할 수는 있음
+      # 두 종류의 트래픽을 격리해야 하는 상황이라면 fluentd Pod를 2개 띄우는게 설정&운영에 더 편할 듯 
       <source>
         @type beats
         tag live.beat   # metadata_as_tag
