@@ -38,6 +38,14 @@ aggregator:
 
       #######################################################
       # 멀티코어(worker)사용 선언
+
+      # (중요) 각 fluentd 플러그인 별로 멀티프로세싱 지원여부, 작동방식이 다르므로 테스트 및 문서참조가 항상 필요
+      # (중요) fluentd 내 이벤트는 동일한 worker에서만 전달된다, worker간 이벤트 전달 불가
+        # 동일한 worker_id 내에서 input, filter, output의 파이프라인 구성이 완성되어야 한다.
+        # 기본적으로 <system>에 선언한 멀티프로세싱을 따르되, 특정 번호 지정(<worker N>)은 예외사례를 기술한다는 느낌으로 사용해야 한다.
+        # e.g. worker 배분을 input은 0번, output은 1~3번과 같이 설정하면, fluentd 실행은 되지만, input과 output이 연결되지 않으므로 데이터 처리가 안됨
+        # e.g. worker 배분을 input은 0-1번, output은 1-3번과 같이 설정하면, 데이터 처리가 될 떄도 있고 안될 때도 있다. 프로세스 배정에 따라 아예 fluentd 실행실패하는 경우도 있음
+ 
       #######################################################
       <system>
         workers 3
@@ -81,9 +89,9 @@ aggregator:
       # - 공식문서에 명시되지않은 경우 등 애매할 땐 INPUT PLUGIN은 단일코어할당을 명시하는 것이 가장 안전!
 
       # FILTER, OUTPUT 플러그인들은 무난하게 멀티코어 적용됨
-      # (중요) 단, 파일처리가 들어가는 부분은 덮어 쓰이지 않도록 식별자(worker_id)를 붙여줘야 한다.
-      # 아래 예시의 경우, <worker>를 명시하지 않았으므로 상단 <system>에 지정된 최대 코어 사용함
-
+      # (중요) 단, 파일처리가 있는 부분은 항상 덮어 쓰이지 않도록 식별자(worker_id)를 붙여주는 것이 안전
+      # 아래 예시에선, <worker>를 명시하지 않았으므로 상단 <system>에 지정된 최대 코어 사용함
+      # 아래 <buffer>의 경우 한 파일로 뭉쳐있어도 되고, 자동으로 식별자도 붙지만 이는 버전/환경따라 다르므로 안전하게 worker_id를 붙여준 것임 
       <match kafka.produce>
         @type kafka2  # Produce plugin   
         brokers my-kfk-kafka.default.svc.cluster.local:9092  
