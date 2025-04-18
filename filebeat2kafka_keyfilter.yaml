@@ -139,8 +139,8 @@ aggregator:
           retry_max_interval 30s
 
           # 파일버퍼는 껐다켜도 문제없어서 default가 false  # 오히려 대용량 flush 발생시 문제 가능성
-          # 단, fluentd 노드 수를 줄이거나, buffer파일경로명 변경시 활성화 필요
-          # 쿠버네티스엔 true 해놓는게 나은거 같기도
+          # 단, fluentd 노드 수를 줄이거나, buffer파일경로(PV)명 변경시 활성화 필요
+          # K8s환경에선 항시 true가 나은 듯
           flush_at_shutdown true # Default: true (memory) / false (file) # fluentd 종료시 buffer 잔여 메시지 flush 여부
         </buffer>
       </match>
