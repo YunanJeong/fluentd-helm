@@ -32,14 +32,16 @@ aggregator:
     # :24231 # 외부 Prometheus가 fluentd의 메트릭을 Pull Request할 수 있도록 제공하는 포트
     fluentd.conf: |
       #######################################################
-      # Filebeat 데이터를 받을 때는 worker 사용보다는, fluentd replica를 늘려서 멀티프로세싱을 구현하는 것이 좋다.
+      # fluentd에서 filebeat 데이터 처리시 멀티프로세싱 구현방법
+      #######################################################
+      # worker 사용보다는, fluentd replica를 늘려서 멀티프로세싱을 구현하는 것이 좋다.
 
-      # fluent-plugin-beats에서 worker적용시 worker 수 만큼 포트번호가 1씩 늘어나 관리가 번거롭다.
+      # fluent-plugin-beats에서 worker적용시 worker 수 만큼 포트번호가 1씩 늘어나 운영&관리가 번거롭다.
       # 결국 filebeat 데이터 수신엔 worker 1개만 사용할 수 밖에 없는데, 이러면 후속처리하는 filter, match에 멀티프로세싱이 적용되어있어도 worker 1개에서만 처리된다. 
     
-      # fluentd 내 이벤트는 동일 worker에서만 전달되기 때문이다. worker 간 전달은 불가.
-      # output플러그인(out-kafka)이 멀티프로세싱을 지원하더라도, input플러그인(in-filebeat)에서 멀티프로세싱을 미적용시 output도 단일 worker에서만 처리되고 다른 worker는 놀게 된다.
-      
+      # fluentd 내 이벤트는 동일 worker에서만 전달되기 때문이다. worker 간 전달은 불가. (단일 worker내 input, filter, output이 모인 완성된 파이프라인을 구성하는 개념)
+      # input플러그인(in-filebeat)에서 멀티프로세싱 미적용시, output플러그인(out-kafka)은 멀티프로세싱을 지원하더라도 단일 worker만 일하고 다른 worker는 놀게 된다. 
+
       # 따라서 데이터 순서가 중요하지 않다면 fluentd replica를 늘려서 구현하는 것이 좋다.
       # LoadBalancer 서비스가 있기 때문에 단일수신포트를 외부에 제공할 수 있어서 사용상에도 더 간편하다.
       #######################################################
