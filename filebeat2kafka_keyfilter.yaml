@@ -66,9 +66,7 @@ aggregator:
       @include default-fluentd-inputs.conf
       @include default-fluentd-output.conf   # <match **>가 있으므로 항상 마지막에 기술해야 함
       {{- if .Values.metrics.enabled }}
-      <worker 0>
-        @include default-metrics.conf
-      </worker>
+      @include default-metrics.conf
       {{- end }}
 
     test-in-http-bytes.conf: |
@@ -133,12 +131,17 @@ aggregator:
 
           # 멀티코어 사용시 파일버퍼명에 식별자 붙이기
           # /opt/bitnami/fluentd/logs/buffers까지는 차트에서 강제하는 PV경로  # worker_id 안붙여도 내부에서 자동 경로 구분하긴하는데, 버전/환경마다 달라서 붙이는게 좋음
-          path "/opt/bitnami/fluentd/logs/buffers/to_kafka/work_#{worker_id}"   
+          path "/opt/bitnami/fluentd/logs/buffers/to_kafka"   
           flush_interval 1s
           flush_thread_count 5
           chunk_limit_size 512kb  # as small as possible
           total_limit_size 64GB   # Default: 512MB (memory) / 64GB (file)
           retry_max_interval 30s
+
+          # 파일버퍼는 껐다켜도 문제없어서 default가 false  # 오히려 대용량 flush 발생시 문제 가능성
+          # 단, fluentd 노드 수를 줄이거나, buffer파일경로명 변경시 활성화 필요
+          # 쿠버네티스엔 true 해놓는게 나은거 같기도
+          flush_at_shutdown true # Default: true (memory) / false (file) # fluentd 종료시 buffer 잔여 메시지 flush 여부
         </buffer>
       </match>
 
