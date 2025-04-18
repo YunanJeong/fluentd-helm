@@ -135,7 +135,7 @@ aggregator:
           flush_interval 1s
           flush_thread_count 5
           chunk_limit_size 512kb  # as small as possible
-          total_limit_size 64GB   # Default: 512MB (memory) / 64GB (file)
+          total_limit_size 64GB   # Default: 512MB (memory) / 64GB (file)  # 노드 수와 함께 고려하여 pv 설정
           retry_max_interval 30s
 
           # 파일버퍼는 껐다켜도 문제없어서 default가 false  # 오히려 대용량 flush 발생시 문제 가능성
