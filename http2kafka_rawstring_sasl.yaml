@@ -66,14 +66,15 @@ aggregator:
 
       <match kafka.produce>
         @type kafka2  # Produce plugin   
+
+        # SASL 인증 설정
+        sasl_over_ssl false
+        username user1   # 실무에선 ENV로 처리
+        password 11111   # 실무에선 ENV로 처리
+        scram_mechanism sha256  # sha256, sha512 가능, 비활성화시 PLAIN
+        
         brokers test-kafka.default.svc.cluster.local:9095    # 콤마로 여러 주소 지정 가능(failure시 사용됨)
         default_topic fluentd-test                           # 멀티토픽 불가, tag routing으로 개별처리 필요
-
-        # SASL_PLAINTEXT 인증 설정
-        sasl_over_ssl false
-        username # user1   # 테스트용, 주석해제 후 사용
-        password # 11111   # 테스트용, 주석해제 후 사용
-        sasl_mechanisms PLAIN
 
         <format>
           @type single_value   # 단일 key에서만 데이터를 추출. 주로 rawstring을 파싱없이 단순전달해야 할 경우, fluentd 내부에선 단일 key에 담아 전달하므로 마지막에 이 key를 해제하고 value만 다른 플랫폼에 전달하기 위해 사용 
