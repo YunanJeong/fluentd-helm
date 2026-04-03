@@ -1,69 +1,169 @@
-# helm install시 사용되는 config value는 노출되지 않도록 gitignore권장
-# 이 파일은 샘플삼아 업로드
+# Default values for skafka.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
 
 global:
   monitorDomain: "{{ .Release.Name }}.wai"
-  imageRegistry: docker.io         # bitnami 계열 글로벌 
+  imageRegistry: docker.io              # bitnami 계열 글로벌
 
 kafka:
+  enabled: true
   image:
     registry: docker.io
 
-  # server.properties에 항목 추가
-  extraConfig: |
-    ########################################################
-    # 모든 replications.factor 관련 설정 방법
+  clusterId: ""
+  existingKraftSecret: ""
+  kraftVersion: 1
 
-    # 브로커 수: n
-    # replications.factor 권장값: n-1
-    # replications.factor 허용값: n과 같거나 작아야 함 && 최소 1
+  # server.properties 전체 덮어쓰기. 빈 값{}은 default.
+  config: {}
+  
+  # server.properties의 특정 키만 덮어쓰기. 사실상 extraConfig
+  overrideConfiguration: # {}
+    # https://kafka.apache.org/42/configuration/broker-configs/
+    ################################################################################
+    # [Broker Config에서 Topic 기본값 변경시]
+    # 1. 파티션 수/RF 관련: 신규생성 토픽에만 적용 (기존 토픽에 소급적용 안됨)
+    # 2. 나머지 전부: 기존 토픽에 소급 적용 (단, 개별 topic-level 설정이 있으면 topic-level 우선)
+    ################################################################################
+
+    ################################################################################
+    # [HA설정]
+    # 설정가능 범위:  1 <= minISR <= RF <= 브로커 수
+    # 권장값: [RF=3, minISR=2]
+
+    # 보통 topic-level에서 관리되지만, 그 기본값을 server.properties에서 지정가능
+    # 기존 topic의 RF변경은 kafka-reassign-partitions.sh 스크립트로 수동작업 필요
+    # 중요한 topic일 수록 RF가 크면 좋음(e.g. __consumer_offset, connect-offset 등)
+    ################################################################################
+    # 신규생성 토픽의 파티션 수 (브로커 수의 정수배 권장) (default: 1)
+    num.partitions: 1
+
+    # __consumer_offset의 RF수 (default: 3)
+    offsets.topic.replication.factor: 1
     
-    # 이미 생성된 topic의 replication.factor는 여기서 변경불가. kafka-reassign-partitions.sh 스크립트를 사용하여 수동변경 가능.
-    # 중요한 topic일 수록 replication.factor가 크면 좋음(e.g. __consumer_offset, connect-offset 등 연결정보 토픽)
-    ########################################################
+    # 신규생성 토픽의 RF수 (default: 1)
+    default.replication.factor: 1
 
-    # __consumer_offset의 복제 수 (default: 3)
-    offsets.topic.replication.factor=1
+    # 모든 토픽의 minISR기본값 (default: 1)
+    min.insync.replicas: 1
 
-    # 신규생성 토픽의 파티션 수  (default: 1)
-    num.partitions=1
-    # 신규생성 토픽의 복제 수    (default: 1)
-    # default.replication.factor=1
-    # 신규생성 토픽의 segment(roll) 분할 기간 단위  (default: 7일)
-    log.roll.ms=172800000
-    # 신규생성 토픽에서 Record의 메타데이터 timestamp 타입  # default: CreateTime
-    # log.message.timestamp.type=LogAppendTime
+    # 모든 토픽의 segment(roll) 분할 기간 단위를 1일로 설정  # default: 7일
+    log.roll.ms: 86400000
 
+    # 모든 토픽의 Record의 메타데이터 timestamp 타입 기본값  # default: CreateTime
+    log.message.timestamp.type: LogAppendTime
+    
+    # default: 100MB #    # 브로커에서 수신가능한 요청 크기 제한 (L4/Network)
+    # socket.request.max.bytes: 104857600
+
+    # 10MB (default: 1MB) # 모든 토픽의 max.message.bytes(수신가능한 Record크기 제한, L7/App) 기본값 지정 # filebeat 기본 10MB에맞춤
+    message.max.bytes: 10485760
+
+
+  existingConfigmap: ""
+  secretConfig: ""
+  existingSecretConfig: ""
+  log4j2: ""
+  existingLog4j2ConfigMap: ""
+
+  # https://github.com/bitnami/charts/issues/19128
   listeners:
     client:
-      protocol: PLAINTEXT          # SASL_PLAINTEXT, # https://github.com/bitnami/charts/issues/19128
+      protocol: PLAINTEXT  # SASL_PLAINTEXT
     controller:
-      protocol: PLAINTEXT          # SASL_PLAINTEXT
+      protocol: PLAINTEXT  # SASL_PLAINTEXT
     interbroker:
-      protocol: PLAINTEXT          # SASL_PLAINTEXT
+      protocol: PLAINTEXT  # SASL_PLAINTEXT
     external:
-      protocol: PLAINTEXT          # SASL_PLAINTEXT
+      protocol: PLAINTEXT  # SASL_PLAINTEXT
     extraListeners: []
-    advertisedListeners: ''        # e.g. "EXTERNAL://172.19.0.126:30003,CLIENT://test-kafka-controller-0.test-kafka-controller-headless.default.svc.cluster.local:9092,INTERNAL://test-kafka-controller-0.test-kafka-controller-headless.default.svc.cluster.local:9094"
+    overrideListeners: ""
+    advertisedListeners: ""
+    securityProtocolMap: ""
 
-  # sals:
-  # tls: 
-  extraEnvVars: []                 # 환경변수 "추가"
-  extraEnvVarsCM: ''
-  extraEnvVarsSecret: ''
+  # sasl:
+  # tls:
+  extraEnvVars: []
+  extraEnvVarsCM: ""
+  extraEnvVarsSecret: ""
   extraVolumes: []
   extraVolumeMounts: []
   sidecars: []
   initContainers: []
+  dnsPolicy: ""
+  dnsConfig: {}
+
+  defaultInitContainers:
+    volumePermissions:
+      enabled: false
+    prepareConfig:
+      containerSecurityContext:
+        enabled: true
+    autoDiscovery:
+      enabled: true  # false시, 아래 네트워크 섹션 직접 설정 필요(nodeports, loadBalancerIps, externalIps 등)
+
+  # controller: KRAFT모드에서 과거 zookeeper를 대체하는 노드를 의미.
+  # Broker 기능을 포함할 수도 있고, 포함하지 않을 수도 있다. default는 combined node로 실행됨.
+  controller:
+    replicaCount: 1       # production ready에선 호스트 1대에 kafka 1개, pv 1개 씩만 배치할 것
+    controllerOnly: false  # true: broker 기능을 포함하지 않는 controller-only노드로 실행 
+                           # false(default): controller와 broker 기능을 모두 포함하는 combined node로 실행
   
-  # controller: KRAFT모드 Broker
-  controller:                      
-    replicaCount: 1
-    controllerOnly: false          # true: broker 기능을 포함하지 않는 controller 실행 
-    zookeeperMigrationMode: false  # true: 주키퍼,크래프트 동시실행가능(마이그레이션목적)
-    extraEnvVars: []               # Kafka Pod에 환경변수 "추가"
+    # Production 권장값: 가용량의 20~40% 수준이면서, 1~6GB 범위를 넘지 않도록 한다. # 고사양 노드에서, percentage보다는 6GB 넘지 않는 것이 최우선사항.
+    heapOpts: -Xmx512m -Xms512m
+
+    extraContainerPorts: []
+
+    # livenessProbe: Production 배포시 일반적으로 꼭 필요한 편이나, 주의사항이 있음
+    livenessProbe:
+      enabled: true
+    
+    # readinessProbe: 필수는 아님. 켜두면 좋음.
+    readinessProbe:
+      enabled: true
+    
+    # 솔직히 필요없음. 꺼두는게 낫다.
+    startupProbe:
+      enabled: false
+
+    lifecycleHooks: {}
+
+    # Production시 최소 resources.requests 지정 필수!!
+    # resources 미할당시, 테스트용 resourcePreset이 기본 적용됨. resources.requests만 설정해도 resourcePreset 무시됨.
+    # resources.limits 할당시 힙메모리 고려할 것
+    resources: # {}
+      requests:
+        cpu: 2
+        memory: 512Mi
+    ##   limits: {}
+
+
+    automountServiceAccountToken: true # autoDiscovery 사용시 true 필요
     affinity: {}
     nodeSelector: {}
+    tolerations: []
+    updateStrategy:
+      type: RollingUpdate
+    extraVolumes: []
+    extraVolumeMounts: []
+    sidecars: []
+    initContainers: []
+
+    # pdb: Pod의 자발적 중단(예: 노드 유지보수, 롤링 업데이트, 수동 삭제 등) 상황에서 동시에 중단될 수 있는 Pod의 수를 제한
+    ## Kafka Pod Disruption Budget
+    ## ref: https://kubernetes.io/docs/concepts/workloads/pods/disruptions/
+    pdb:
+      create: true
+      minAvailable: ""  # 고가용성 보장시 replication factor 최소 2 설정 후, "50%"이상 pod가 켜져있도록 설정
+      maxUnavailable: ""
+
+    persistentVolumeClaimRetentionPolicy:
+      enabled: false
+      whenScaled: Retain
+      whenDeleted: Retain
+
     persistence:
       enabled: false               # production 배포시, true 필수
       size: 8Gi                    # 디스크 가용량의 70~80% 권장
@@ -73,126 +173,88 @@ kafka:
       size: 8Gi
       mountPath: /opt/bitnami/kafka/logs
   
-  # broker: Zookeeper모드 Broker
-  broker:                          
+  # controller 기능이 없는 순수 broker
+  broker:
     replicaCount: 0
-    zookeeperMigrationMode: false  # true: 주키퍼,크래프트 동시실행가능(마이그레이션목적)
-    extraEnvVars: []               # Kafka Pod에 환경변수 "추가"
-    affinity: {}
-    nodeSelector: {}
-    persistence:
-      enabled: false               # production 배포시, true 필수
-      size: 8Gi                    # 디스크 가용량의 70~80% 권장
-      mountPath: /bitnami/kafka
-    logPersistence:
-      enabled: false
-      size: 8Gi
-      mountPath: /opt/bitnami/kafka/logs
   
+  # 공통 Service
   service:
     type: LoadBalancer
-    ports:
-      client: 9092                 # "tcp-client"   (allows access from localhost machine)
-      external: 9095               # "tcp-external" (requires externalAccess.enabled=true)
-    nodePorts:
-      client: ''
-      external: ''
-    loadbalancerIP: ''             # Managed Service 등 실제 LB가 있으면 입력. K3s의 가상 LB는 자동적용
-    
-  externalAccess:
-    enabled: true                  # 위 "tcp-external"을 쓰려면 true 필요
-    autoDiscovery:
-      enabled: true                # false시, 아래 네트워크 섹션 직접 설정 필요(nodeports, loadBalancerIps, externalIps 등)
-      image:
-        registry: docker.io        # 오프라인 환경에서 docker.io프록시 or 사설registry로 설정                                
-    
-    # KRAFT모드 Broker의 externalAccess 설정
-    controller:  
-      service:                     # Broker 당 1개씩 생성되는 Service
-        type: NodePort            
-                                   ##################################################################################################
-                                   # K8s기반 Kafka에서 외부 Client와 Broker 간 통신과정
-                                     # 1. Client가 LoadBalancer의 주소(tcp-external)로 접근
-                                     # 2. LoadBalancer는 Client의 최초 접근 트래픽을 Broker 1개에 랜덤매칭하여 포워딩  (K8s의 LoadBalancer 기능)
-                                     # 3. 해당 Broker는 자신에게 직접 접근가능한 주소를 Kafka Client에게 전달          (Kafka의 advertised.listener 기능)
-                                     # 4. Kafka Client는 connection이 유지되는 동안 Broker로부터 받은 주소로 통신
 
-                                     # => kafka.service: 1번 과정의 "LoadBalancer 접근 방법"을 결정
-                                     # => kakfa.externalAccess.controller.service: 4번 과정의 "개별 Broker 접근 방법"을 결정
-                                   ##################################################################################################
-                                   
-                                   # externalAccess섹션은 [kafka server.properties의 advertised.listeners] 설정에 관여한다.
-                                    
-                                   # <kafka client가 "tcp-external"로 접근시 동작>
-                                     # 첫번째 통신은 "tcp-external"포트를 사용
-                                     # 이후 client는 advertised.listeners의 [EXTERNAL://IP:Port]로 통신
-                                    
-                                   # <네트워크 연결 검증시 주의 사항>
-                                     # 1회성 통신인 [curl], [kcat토픽조회] 등은 advertised.listeners 주소를 사용하지 않으므로 externalAccess 설정에 오류가 있어도 정상 통신된다.
-                                     # 2회 이상 통신하는 [kafka-topics.sh토픽조회], [kafka-console-producer.sh], [kafka-console-consumer.sh] 등으로 테스트 필요
-                                     # kcat은 네트워크 테스트용으론 부적절
-        ports:
-          external: 9094           # "tcp-kafka"  (internally used)
-                                    
-        nodePorts: []              # broker 수 만큼 지정 (중복불가) # autoDiscovery 미사용시 필수 # e.g. [30003, 30004, 30005]  
-        externalIPs: []            # broker 수 만큼 지정 # autoDiscovery 미사용시 설정 권장 # broker 별 실제 통신가능한 IP 직접 입력 (중복가능)
+
+  ##################################################################################################
+  # K8s기반 Kafka클러스터에서 외부 Client와 Broker 간 통신과정
+    # 1. Client가 LoadBalancer의 주소(tcp-external)로 접근
+    # 2. LoadBalancer는 Client의 최초 접근 트래픽을 Broker 1개에 랜덤매칭하여 전달                 (K8s의 LoadBalancer Service 기능)
+    # 3. 해당 Broker는 모든 Broker의 advertised.listener(직접 접근 가능한 주소)를 Client에게 전달  (Kafka의 기능)
+    #   - Tip) 모든 Broker는 서로의 advertised.listener 정보를 동기화하여 이미 갖고있음
+    #   - Tip) 즉, Client는 어떤 경로로든 하나의 Broker에 접근하면 모든 Broker에 직접 접근 가능한 주소를 획득
+    # 4. Kafka Client는 connection이 유지되는 동안 Broker로부터 받은 주소로 통신 (각 리더 파티션 배치에 따라 개별 Broker와 직접통신)
+
+    # => kafka.service: 1번 과정의 "LoadBalancer 접근 방법"을 결정
+    # => kakfa.externalAccess.controller.service: 4번 과정의 "개별 Broker 접근 방법"을 결정
+  ##################################################################################################
   
-                                   # externalAccess Nodeport모드 && autoDiscovery 미사용 && externalIPs 미등록시
-                                     # advertisedListener로 "EXTERNAL://{공인IP}:{개별nodeport}"가 자동등록된다.
-                                     # EC2에선 괜찮지만, 일반적으로 공인IP를 통한 포트포워딩이 없으므로 사용불가
-    
-    # Zookeeper모드 Broker의 externalAccess 설정 (섹션 동일)
+  # externalAccess섹션은 [kafka server.properties의 advertised.listeners] 설정에 관여한다.
+  
+  # <kafka client가 "tcp-external"로 접근시 동작>
+    # 첫번째 통신은 "tcp-external"포트를 사용
+    # 이후 client는 advertised.listeners의 [EXTERNAL://IP:Port]로 통신
+  
+  # <네트워크 연결 검증시 주의 사항>
+    # 1회성 통신인 [curl], [kcat토픽조회] 등은 advertised.listeners 주소를 사용하지 않으므로 externalAccess 설정에 오류가 있어도 정상 통신된다.
+    # 2회 이상 통신하는 [kafka-topics.sh토픽조회], [produce], [consume] 등으로 테스트 필요
+  externalAccess:
+    enabled: true
+    controller:
+      service:            # 노드 당 1개씩 생성되는 Service (advertised.listeners)
+        type: NodePort
+        ports:
+          external: 9094  # "tcp-kafka"  (internally used)
+
+        nodePorts: [30003]    # broker 수 만큼 지정 (중복불가) # autoDiscovery 미사용시 필수 # e.g. [30003, 30004, 30005]  
+        externalIPs: []  # broker 수 만큼 지정 # autoDiscovery 미사용시 설정 권장 # broker 별 실제 통신가능한 IP 직접 입력 (중복가능)
+
+                         # externalAccess Nodeport모드 && autoDiscovery 미사용 && externalIPs 미등록시
+                         # advertisedListener로 "EXTERNAL://{공인IP}:{개별nodeport}"가 자동등록된다.
+                         # EC2에선 괜찮지만, 일반적으로 공인IP를 통한 포트포워딩이 없으므로 사용불가 
+
+
+    # Broker-Only의 externalAccess 설정 (섹션 동일)    
     broker:                          
       service:
         type: LoadBalancer
 
   networkPolicy:
-    enabled: false
-  volumePermissions:
-    enabled: false
+    enabled: true
+    allowExternal: true
+    allowExternalEgress: true
+    addExternalClientAccess: true
+    extraIngress: []
+    extraEgress: []
+    #
+    ingressPodMatchLabels: {}
+    ingressNSMatchLabels: {}
+    ingressNSPodMatchLabels: {}
+
   serviceAccount:
     create: true
-  rbac: 
-    create: true
+  rbac:
+    create: true  # autoDiscovery 사용시 true 필요
 
   metrics:
-    kafka:          
+    jmx:
       enabled: false
-      image:
-        registry: docker.io  # bitnami/kafka-exporter
-      containerPorts:
-        metrics: 9308
-    jmx:            
-      enabled: false
-      kafkaJmxPort: 5555
-      image:
-        registry: docker.io  # bitnami/jmx-exporter
-      containerPorts:
-        metrics: 5556
-      service:
-        ports:
-          metrics: 5556
-    serviceMonitor:          # bitnami/prometheus-operator 관련 설정
+    serviceMonitor:
       enabled: false
     prometheusRule:
       enabled: false
 
   provisioning:
     enabled: false
-    topics: []
     numPartitions: 1         # 초기 생성할 topic들의 partition 수 (broker의 default 설정 아님)
     replicationFactor: 1     # 초기 생성할 topic들의 replicationFactors (broker의 default 설정 아님)
-
-  kraft:
-    enabled: true
-    clusterId: ""
-  zookeeper:
-    enabled: false
-    replicaCount: 3
-    persistence:
-      enabled: false  # production시 true 필수
-      size: 8Gi       # 충분 
-
+    topics: []
 
 connect:
   enabled: true
@@ -205,6 +267,8 @@ connect:
     CONNECT_BOOTSTRAP_SERVERS: "{{ .Release.Name }}-kafka:9092"
     CONNECT_REST_PORT: "8083"
     # KAFKA_HEAP_OPTS: "-Xms4G -Xmx4G"
+    # 컨테이너 최대 가용량 대비 힙 비율 설정(requests.limits.memory, 없으면 노드 사양 기준)이고, -Xms, -Xmx가 함께 지정되면 무시됨
+    # KAFKA_HEAP_OPTS: "-XX:InitialRAMPercentage=33 -XX:MaxRAMPercentage=33" 
   extraVolumeMounts: # []
     - name: plugin
       mountPath: /usr/share/confluent-hub-components
@@ -214,16 +278,17 @@ connect:
   initContainers:    # []
     - name: init-plugin
       image: confluentinc/cp-kafka-connect:7.2.2  # curl, wget, tar, confluent-hub 가능
-      command:
+      command: 
         - sh
         - -c
         - |
           confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:10.7.4
-          confluent-hub install --no-prompt confluentinc/kafka-connect-s3:10.5.4
+          confluent-hub install --no-prompt confluentinc/kafka-connect-s3:10.5.25
           wget -P /usr/share/confluent-hub-components/confluentinc-kafka-connect-s3/ https://github.com/YunanJeong/kafka-connect-s3-without-topicname/releases/download/v10.5.0%2Bv1.0.0/topicless-timebasedpartitioner.jar
       volumeMounts:
         - name: plugin
           mountPath: /usr/share/confluent-hub-components
+
 
 k8dashboard:
   enabled: true
@@ -234,8 +299,29 @@ ui4kafka:
   enabled: true
   image:  # 글로벌 적용 불가
     registry: docker.io
+  service:
+    type: NodePort
+    nodePort: 30080
 
 ingress:
   enabled: true
   annotations:
-    spec.ingressClassName: traefik  # k3s default ingress controller
+    spec.ingressClassName: traefik
+    
+    # kubernetes.io/ingress.class is deprecated
+    
+    # # minikube 설치용
+    # kubernetes.io/ingress.class: nginx
+
+    # # k3s 설치용
+    # kubernetes.io/ingress.class: traefik
+
+    # # k3d 설치용
+    # ingress.kubernetes.io/ssl-redirect: "false"
+
+    # # AWS EKS 설치용
+    # kubernetes.io/ingress.class: alb
+    # alb.ingress.kubernetes.io/group.name: public
+    # alb.ingress.kubernetes.io/scheme: internet-facing
+    # alb.ingress.kubernetes.io/target-type: ip
+    # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 9090}]'

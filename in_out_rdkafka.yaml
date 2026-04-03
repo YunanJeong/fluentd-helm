@@ -71,7 +71,7 @@ aggregator:
 
         # Kafka Consumer Options를 그대로 쓸 수 있는 것으로 보임.
         kafka_configs {
-          "bootstrap.servers": "source-kafka.kafka.svc.cluster.local:9092",
+          "bootstrap.servers": "my-kfk-kafka.default.svc.cluster.local:9092",
           "group.id": "consumer-group-name"
         }
       </source>

@@ -6,7 +6,7 @@
 
 ```sh
 # kafka 샘플 설치 (KRAFT, Private, broker 1, connect 1)
-helm install my-kfk skafka-2.0.4.tgz -f my-kafka.yaml
+helm install my-kfk skafka-3.0.2.tgz -f my-kafka.yaml
 ```
 
 ## Loki (PLG)
