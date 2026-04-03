@@ -70,9 +70,11 @@ aggregator:
         kafka_message_key record_key   # Optional. format옵션과 함께 사용. 
 
         # Kafka Consumer Options를 그대로 쓸 수 있는 것으로 보임.
+        # auto.offset.reset의 default는 latest(최초실행시 현시점부터 읽기)
         kafka_configs {
           "bootstrap.servers": "my-kfk-kafka.default.svc.cluster.local:9092",
-          "group.id": "consumer-group-name"
+          "group.id": "consumer-group-name",
+          "auto.offset.reset": "earliest"
         }
       </source>
 
