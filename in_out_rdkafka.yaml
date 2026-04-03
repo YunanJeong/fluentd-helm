@@ -83,6 +83,7 @@ aggregator:
         <buffer>
           @type memory
           flush_mode interval
+          flush_at_shutdown true
           flush_interval 2s
           flush_thread_count 4
           chunk_limit_size 2MB #as small as possible
