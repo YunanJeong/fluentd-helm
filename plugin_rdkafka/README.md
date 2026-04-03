@@ -9,6 +9,7 @@
 - input: rdkafka_group
 - output: rdkafka2
 - librdkafka C 라이브러리 의존성 있음. 공식 도커 이미지에 미포함되므로 별도 관리 필요.
+- fluent-plugin-kafka에 추가로 rdkafka gem 설치 필요
 
 ### 2티어 (간단한 Test급)
 
