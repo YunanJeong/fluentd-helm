@@ -14,6 +14,7 @@
 
 - input: kafka_group
 - output: kafka2
+- Kafka 4 미호환, 사실상 deprecated
 
 ## 총정리
 
